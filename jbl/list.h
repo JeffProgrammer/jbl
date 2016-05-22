@@ -227,6 +227,7 @@ public:
 				--mCount;
 				return true;
 			}
+         previous = n;
 		}
 		return false;
 	}
