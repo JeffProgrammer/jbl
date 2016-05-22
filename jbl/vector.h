@@ -375,10 +375,12 @@ private:
 	 */
 	void expand()
 	{
-		// if we already allocated 0xffffffff size of vector, we can't allocate more.
-		assert((mAllocSize << 1) != 0xffffffff);
-		
+		// bump size to next power of 2
 		mAllocSize <<= 1;
+		
+		// if we already allocated 0xffffffff size of vector, we can't allocate more.
+		assert(mAllocSize != 0xffffffff);
+
 		mArray = reinterpret_cast<T*>(realloc(mArray, mAllocSize * sizeof(T)));
 		
 		// we could potentially be allocating a LOT of memory. Check to make sure
