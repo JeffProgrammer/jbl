@@ -188,8 +188,8 @@ public:
 	 */
 	Vector()
 	{
-		mArray = nullptr;
-		mAllocSize = 0;
+		mArray = reinterpret_cast<T*>(calloc(1, sizeof(T)));
+		mAllocSize = 1;
 		mCount = 0;
 	}
 	
@@ -203,7 +203,7 @@ public:
 		// Check to make sure that capacity is a power of 2.
 #endif
 		
-		mArray = reinterpret_cast<T*>(calloc(sizeof(T), capacity));
+		mArray = reinterpret_cast<T*>(calloc(capacity, sizeof(T)));
 		mAllocSize = capacity;
 		mCount = 0;
 	}
@@ -376,7 +376,7 @@ private:
 	void expand()
 	{
 		// bump size to next power of 2
-		mAllocSize <<= 1;
+      mAllocSize = mAllocSize << 1;
 		
 		// if we already allocated 0xffffffff size of vector, we can't allocate more.
 		assert(mAllocSize != 0xffffffff);
