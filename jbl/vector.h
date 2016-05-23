@@ -282,13 +282,10 @@ public:
 		}
 		if (position == 0xffffffff)
 			return false;
-		
-		// TODO: optimize
+
+		// shift everything down by 1 from that position to keep the array compact.
 		--mCount;
-		for (unsigned int i = position; i < mCount; ++i)
-		{
-			mArray[i] = mArray[i+1];
-		}
+		memmove(mArray + position, mArray + position + 1, (mCount - position) * sizeof(T));
 		return true;
 	}
 	
