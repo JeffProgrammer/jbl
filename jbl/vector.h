@@ -368,7 +368,7 @@ private:
 	void expand()
 	{
 		// bump size to next power of 2
-      mAllocSize = mAllocSize << 1;
+		mAllocSize = mAllocSize << 1;
 		
 		// if we already allocated 0xffffffff size of vector, we can't allocate more.
 		assert(mAllocSize != 0xffffffff);
