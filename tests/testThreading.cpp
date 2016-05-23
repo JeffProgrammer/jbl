@@ -53,9 +53,9 @@ void myThreadFn(void *arg)
 
 int main(int argc, const char **argv)
 {
-	int *x = new int(20);
-	Thread t(myThreadFn, x);
-	Thread t2(myThreadFn, x);
+	int x = 20;
+	Thread t(myThreadFn, &x);
+	Thread t2(myThreadFn, &x);
 	t.join();
 	t2.join();
 
