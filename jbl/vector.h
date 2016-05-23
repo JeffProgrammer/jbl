@@ -36,6 +36,7 @@
 #include <stdlib.h>
 #include <assert.h>
 #include <memory.h>
+#include "jbl/types.h"
 
 /**
  * Implements a contiguous array that will automatically grow in size
@@ -61,7 +62,7 @@ public:
 		 * @param count The amount of elements in the array.
 		 * @param position The starting position of the iterator.
 		 */
-		Iterator(T *ptr, unsigned int count, unsigned int position)
+		Iterator(T *ptr, U32 count, U32 position)
 		{
 			mCount = count;
 			mPosition = position;
@@ -102,12 +103,12 @@ public:
 		/**
 		 * The amount of elemens within the array.
 		 */
-		unsigned int mCount;
+		U32 mCount;
 		
 		/**
 		 * The position of the iterator.
 		 */
-		unsigned int mPosition;
+		U32 mPosition;
 		
 		/**
 		 * A pointer to the array.
@@ -130,7 +131,7 @@ public:
 		 * @param count The amount of elements in the array.
 		 * @param position The starting position of the iterator.
 		 */
-		CIterator(T *ptr, unsigned int count, unsigned int position)
+		CIterator(T *ptr, U32 count, U32 position)
 		{
 			mCount = count;
 			mPosition = position;
@@ -170,12 +171,12 @@ public:
 		/**
 		 * The amount of elemens within the array.
 		 */
-		unsigned int mCount;
+		U32 mCount;
 		
 		/**
 		 * The position of the iterator.
 		 */
-		unsigned int mPosition;
+		U32 mPosition;
 		
 		/**
 		 * A pointer to the array.
@@ -197,7 +198,7 @@ public:
 	 * Creates a vector of type T with an initial capacity.
 	 * @param capacity A power of 2 initial capacity of the vector.
 	 */
-	Vector(unsigned int capacity)
+	Vector(U32 capacity)
 	{
 #ifndef NDEBUG
 		// Check to make sure that capacity is a power of 2.
@@ -233,7 +234,7 @@ public:
 	 * Grabs the amount of elements within the Vector.
 	 * @return The amount of elements in the vector.
 	 */
-	inline unsigned int count() const
+	inline U32 count() const
 	{
 		return mCount;
 	}
@@ -243,7 +244,7 @@ public:
 	 * @param index The location of the element.
 	 * @return The element at the specified index.
 	 */
-	inline T operator[](unsigned int index) const
+	inline T operator[](U32 index) const
 	{
 		assert(index >= 0 && index < mCount);
 		return mArray[index];
@@ -256,7 +257,7 @@ public:
 	 */
 	inline bool contains(const T &item) const
 	{
-		for (unsigned int i = 0; i < mCount; ++i)
+		for (U32 i = 0; i < mCount; ++i)
 		{
 			if (mArray[i] == item)
 				return true;
@@ -271,7 +272,7 @@ public:
 	 */
 	inline bool remove(const T &item)
 	{
-		for (unsigned i = 0; i < mCount; ++i)
+		for (U32 i = 0; i < mCount; ++i)
 		{
 			if (mArray[i] == item)
 			{
@@ -354,12 +355,12 @@ private:
 	/**
 	 * The amount of elements within the vector.
 	 */
-	unsigned int mCount;
+	U32 mCount;
 	
 	/**
 	 * The capacity of the vector.
 	 */
-	unsigned int mAllocSize;
+	U32 mAllocSize;
 	
 	/**
 	 * Expands the capacity of the array so that it automatically has

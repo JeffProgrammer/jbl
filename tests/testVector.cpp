@@ -29,10 +29,10 @@
 //-----------------------------------------------------------------------------
 
 #include <stdio.h>
-#include <jbl/types.h>
-#include <jbl/vector.h>
+#include "jbl/types.h"
+#include "jbl/vector.h"
 
-int main(int argc, const char **argv)
+S32 main(S32 argc, const S8 **argv)
 {
    Vector<S32> vec;
    for (S32 i = 0; i < 20; ++i)

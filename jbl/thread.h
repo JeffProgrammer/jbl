@@ -39,6 +39,8 @@
 #include <pthread.h>
 #endif
 
+#include "types.h"
+
 typedef void(*threadFunction)(void*);
 
 class Thread
@@ -47,7 +49,7 @@ public:
 	Thread(threadFunction fn, void *arg);
 	~Thread();
 
-	static void sleep(unsigned int milliseconds);
+	static void sleep(U32 milliseconds);
 
 	void join();
 

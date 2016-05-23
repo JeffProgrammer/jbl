@@ -315,7 +315,7 @@ public:
 	 * Returns the count of how many elements there are in the list.
 	 * @return the amount of elements within the list.
 	 */
-	inline unsigned int count() const
+	inline U32 count() const
 	{
 		return mCount;
 	}
@@ -374,7 +374,7 @@ private:
 	/**
 	 * The amount of elements that are within the list.
 	 */
-	unsigned int mCount;
+	U32 mCount;
 };
 
 #endif // _JBL_LIST_H_

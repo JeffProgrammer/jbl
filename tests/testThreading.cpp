@@ -29,12 +29,12 @@
 //-----------------------------------------------------------------------------
 
 #include <stdio.h>
-#include <jbl/types.h>
-#include <jbl/thread.h>
-#include <jbl/mutex.h>
+#include "jbl/types.h"
+#include "jbl/thread.h"
+#include "jbl/mutex.h"
 
 Mutex mutex;
-int inc = 0;
+S32 inc = 0;
 
 void incriment()
 {
@@ -45,15 +45,15 @@ void incriment()
 
 void myThreadFn(void *arg)
 {
-	int x = *(int*)arg;
-	for (int i = 0; i < x; ++i)
+	S32 x = *(S32*)arg;
+	for (S32 i = 0; i < x; ++i)
 		incriment();
 	Thread::sleep(1000);
 }
 
-int main(int argc, const char **argv)
+S32 main(S32 argc, const S8 **argv)
 {
-	int x = 20;
+	S32 x = 20;
 	Thread t(myThreadFn, &x);
 	Thread t2(myThreadFn, &x);
 	t.join();

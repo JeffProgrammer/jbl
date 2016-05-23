@@ -57,7 +57,7 @@ void* Thread::pthreadThreadWrapper(void *data)
 
 #endif // _win32
 
-void Thread::sleep(unsigned int milliseconds)
+void Thread::sleep(U32 milliseconds)
 {
 #ifdef _WIN32
 	Sleep(milliseconds);
