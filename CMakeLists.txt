@@ -17,6 +17,15 @@ else()
 endif()
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
+set (JBL_SRC
+	jbl/compiler.h
+	jbl/list.h
+	jbl/thread.h
+	jbl/thread.cpp
+	jbl/types.h
+	jbl/vector.h
+)
+add_library(JBL ${JBL_SRC})
 
 #------------------------------------------------------------------------------
 # Tests
