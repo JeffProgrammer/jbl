@@ -12,7 +12,7 @@ A base library for C++11.
 
 5) OOP - Parts of the STL are really not true OOP where they should be. std::find vs a find method on a vector, for example, really sucks.
 
-6) Personal Learning - I wanted to practice writing data structures, because I want too.
+6) Personal Learning - I wanted to practice writing data structures, because I want to.
 
 # Compilers tested:
 
