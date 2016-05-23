@@ -1,4 +1,6 @@
 //-----------------------------------------------------------------------------
+// mutex.h
+//
 // Copyright(c) 2016, Jeff Hutchinson
 // All rights reserved.
 //
@@ -12,7 +14,7 @@
 //   this list of conditions and the following disclaimer in the documentation
 //   and / or other materials provided with the distribution.
 //
-// * Neither the name of threadGL nor the names of its
+// * Neither the name of jbl nor the names of its
 //   contributors may be used to endorse or promote products derived from
 //   this software without specific prior written permission.
 //
@@ -28,39 +30,37 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //-----------------------------------------------------------------------------
 
-#include <stdio.h>
-#include <jbl/types.h>
-#include <jbl/thread.h>
-#include <jbl/mutex.h>
-
-Mutex mutex;
-int inc = 0;
-
-void incriment()
-{
-	LockGuard g(&mutex);
-	++inc;
-	printf("inc is now: %d\n", inc);
-}
-
-void myThreadFn(void *arg)
-{
-	int x = *(int*)arg;
-	for (int i = 0; i < x; ++i)
-		incriment();
-	Thread::sleep(1000);
-}
-
-int main(int argc, const char **argv)
-{
-	int *x = new int(20);
-	Thread t(myThreadFn, x);
-	Thread t2(myThreadFn, x);
-	t.join();
-	t2.join();
+#ifndef _JBL_MUTEX_H_
+#define _JBL_MUTEX_H_
 
 #ifdef _WIN32
-   system("pause");
+#include <Windows.h>
 #endif
-	return 0;
-}
+
+class Mutex
+{
+public:
+	Mutex();
+	~Mutex();
+
+	void lock();
+	bool tryLock();
+	void unlock();
+
+private:
+#ifdef _WIN32
+	CRITICAL_SECTION mMutex;
+#endif
+};
+
+class LockGuard
+{
+public:
+	LockGuard(Mutex *mutex);
+	~LockGuard();
+
+private:
+	Mutex *mMutex;
+};
+
+#endif // _JBL_MUTEX_H_

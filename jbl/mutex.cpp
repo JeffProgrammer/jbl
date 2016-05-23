@@ -1,4 +1,6 @@
 //-----------------------------------------------------------------------------
+// mutex.cpp
+//
 // Copyright(c) 2016, Jeff Hutchinson
 // All rights reserved.
 //
@@ -12,7 +14,7 @@
 //   this list of conditions and the following disclaimer in the documentation
 //   and / or other materials provided with the distribution.
 //
-// * Neither the name of threadGL nor the names of its
+// * Neither the name of jbl nor the names of its
 //   contributors may be used to endorse or promote products derived from
 //   this software without specific prior written permission.
 //
@@ -28,39 +30,52 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //-----------------------------------------------------------------------------
 
-#include <stdio.h>
-#include <jbl/types.h>
-#include <jbl/thread.h>
-#include <jbl/mutex.h>
+#include "mutex.h"
 
-Mutex mutex;
-int inc = 0;
-
-void incriment()
+Mutex::Mutex()
 {
-	LockGuard g(&mutex);
-	++inc;
-	printf("inc is now: %d\n", inc);
-}
-
-void myThreadFn(void *arg)
-{
-	int x = *(int*)arg;
-	for (int i = 0; i < x; ++i)
-		incriment();
-	Thread::sleep(1000);
-}
-
-int main(int argc, const char **argv)
-{
-	int *x = new int(20);
-	Thread t(myThreadFn, x);
-	Thread t2(myThreadFn, x);
-	t.join();
-	t2.join();
-
 #ifdef _WIN32
-   system("pause");
+	InitializeCriticalSection(&mMutex);
 #endif
-	return 0;
+}
+
+Mutex::~Mutex()
+{
+#ifdef _WIN32
+	DeleteCriticalSection(&mMutex);
+#endif
+}
+
+void Mutex::lock()
+{
+#ifdef _WIN32
+	EnterCriticalSection(&mMutex);
+#endif
+}
+
+bool Mutex::tryLock()
+{
+#ifdef _WIN32
+	return !!TryEnterCriticalSection(&mMutex);
+#endif
+}
+
+void Mutex::unlock()
+{
+#ifdef _WIN32
+	LeaveCriticalSection(&mMutex);
+#endif
+}
+
+//-----------------------------------------------------------------------------
+
+LockGuard::LockGuard(Mutex *mutex)
+{
+	mMutex = mutex;
+	mutex->lock();
+}
+
+LockGuard::~LockGuard()
+{
+	mMutex->unlock();
 }

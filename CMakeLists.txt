@@ -20,6 +20,8 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 set (JBL_SRC
 	jbl/compiler.h
 	jbl/list.h
+	jbl/mutex.h
+	jbl/mutex.cpp
 	jbl/thread.h
 	jbl/thread.cpp
 	jbl/types.h
@@ -34,5 +36,11 @@ add_library(JBL ${JBL_SRC})
 option(BuildJBLTests "Build the JBL Test programs." ON)
 if (BuildJBLTests)
 	add_executable(VectorTest tests/testVector.cpp)
-	add_executable(ListTest   tests/testList.cpp)
+	target_link_libraries(VectorTest JBL)
+	
+	add_executable(ListTest tests/testList.cpp)
+	target_link_libraries(ListTest JBL)
+	
+	add_executable(ThreadingTest tests/testThreading.cpp)
+	target_link_libraries(ThreadingTest JBL)
 endif()
