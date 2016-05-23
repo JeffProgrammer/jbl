@@ -36,6 +36,8 @@ Mutex::Mutex()
 {
 #ifdef _WIN32
 	InitializeCriticalSection(&mMutex);
+#else
+	pthread_mutex_init(&mMutex, nullptr);
 #endif
 }
 
@@ -43,6 +45,8 @@ Mutex::~Mutex()
 {
 #ifdef _WIN32
 	DeleteCriticalSection(&mMutex);
+#else
+	pthread_mutex_destroy(&mMutex);
 #endif
 }
 
@@ -50,6 +54,8 @@ void Mutex::lock()
 {
 #ifdef _WIN32
 	EnterCriticalSection(&mMutex);
+#else
+	pthread_mutex_lock(&mMutex);
 #endif
 }
 
@@ -57,6 +63,8 @@ bool Mutex::tryLock()
 {
 #ifdef _WIN32
 	return !!TryEnterCriticalSection(&mMutex);
+#else
+	return !!pthread_mutex_trylock(&mMutex);
 #endif
 }
 
@@ -64,6 +72,8 @@ void Mutex::unlock()
 {
 #ifdef _WIN32
 	LeaveCriticalSection(&mMutex);
+#else
+	pthread_mutex_unlock(&mMutex);
 #endif
 }
 

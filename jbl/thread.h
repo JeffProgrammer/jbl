@@ -35,6 +35,8 @@
 
 #ifdef _WIN32
 #include <Windows.h>
+#else
+#include <pthread.h>
 #endif
 
 typedef void(*threadFunction)(void*);
@@ -57,13 +59,17 @@ private:
 	};
 
 	ThreadData mThreadData;
+	bool mDone;
 
 #ifdef _WIN32
 	HANDLE mHandle;
 	DWORD mThreadId;
-	bool mDone;
 
 	static DWORD WINAPI win32ThreadWrapper(void *data);
+#else
+	pthread_t mThread;
+	
+	static void* pthreadThreadWrapper(void *data);
 #endif
 };
 

@@ -30,11 +30,14 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //-----------------------------------------------------------------------------
 
+#include <stdlib.h>
 #include "thread.h"
 
-#ifdef _WIN32
+#ifndef _WIN32
+#include <unistd.h>
+#endif
 
-#include <Windows.h>
+#ifdef _WIN32
 
 DWORD WINAPI Thread::win32ThreadWrapper(void *data)
 {
@@ -43,12 +46,23 @@ DWORD WINAPI Thread::win32ThreadWrapper(void *data)
 	return 1;
 }
 
+#else
+
+void* Thread::pthreadThreadWrapper(void *data)
+{
+	ThreadData *d = static_cast<ThreadData*>(data);
+	d->fn(d->arg);
+	return nullptr;
+}
+
 #endif // _win32
 
 void Thread::sleep(unsigned int milliseconds)
 {
 #ifdef _WIN32
 	Sleep(milliseconds);
+#else
+	usleep(milliseconds * 1000);
 #endif
 }
 
@@ -56,11 +70,14 @@ Thread::Thread(threadFunction fn, void *arg)
 {
 	mThreadData.fn = fn;
 	mThreadData.arg = arg;
+	mDone = false;
 
 #ifdef _WIN32
-	mDone = false;
 	mHandle = CreateThread(NULL, 0, Thread::win32ThreadWrapper, &mThreadData, 0, &mThreadId);
 	if (mHandle == NULL)
+		exit(-2);
+#else
+	if (pthread_create(&mThread, nullptr, Thread::pthreadThreadWrapper, &mThreadData) != 0)
 		exit(-2);
 #endif
 }
@@ -74,6 +91,10 @@ Thread::~Thread()
 			WaitForSingleObject(mHandle, INFINITE);
 		CloseHandle(mHandle);
 	}
+#else
+	if (!mDone)
+		pthread_join(mThread, nullptr);
+	pthread_cancel(mThread);
 #endif
 }
 
@@ -81,6 +102,8 @@ void Thread::join()
 {
 #ifdef _WIN32
 	WaitForSingleObject(mHandle, INFINITE);
-	mDone = true;
+#else
+	pthread_join(mThread, nullptr);
 #endif
+	mDone = true;
 }

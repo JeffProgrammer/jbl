@@ -35,6 +35,8 @@
 
 #ifdef _WIN32
 #include <Windows.h>
+#else
+#include <pthread.h>
 #endif
 
 class Mutex
@@ -50,6 +52,8 @@ public:
 private:
 #ifdef _WIN32
 	CRITICAL_SECTION mMutex;
+#else
+	pthread_mutex_t mMutex;
 #endif
 };
 
