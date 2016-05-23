@@ -271,22 +271,17 @@ public:
 	 */
 	inline bool remove(const T &item)
 	{
-		unsigned int position = 0xffffffff;
 		for (unsigned i = 0; i < mCount; ++i)
 		{
 			if (mArray[i] == item)
 			{
-				position = i;
-				break;
+				// shift everything down by 1 from that position to keep the array compact.
+				--mCount;
+				memmove(mArray + i, mArray + i + 1, (mCount - i) * sizeof(T));
+				return true;
 			}
 		}
-		if (position == 0xffffffff)
-			return false;
-
-		// shift everything down by 1 from that position to keep the array compact.
-		--mCount;
-		memmove(mArray + position, mArray + position + 1, (mCount - position) * sizeof(T));
-		return true;
+		return false;
 	}
 	
 	/**
