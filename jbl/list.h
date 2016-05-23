@@ -37,8 +37,8 @@
 #include <assert.h>
 
 /**
- * A collection that represents a linked list. Each node is heap allocated when
- * an item is added and removed when it is deleted from the list. It uses the
+ * A collection that represents a double linked list. Each node is heap allocated when
+ * when an item is added and removed when it is deleted from the list. It uses the
  * global new allocator and global delete deallocator. It supports forward 
  * iteration.
  */
@@ -60,6 +60,11 @@ public:
 		 * The next node within the list, or nullptr to represent the end.
 		 */
 		Node *next;
+
+		/**
+		 * The previous node within the list, or nullptr to represent the beginning.
+		 */
+		Node *previous;
 	};
 	
 	/**
@@ -172,17 +177,25 @@ public:
 	
 	List()
 	{
-		// dummy node
+		// dummy front node
 		mFront = new Node();
-		mFront->next = nullptr;
-		
+
+		// dummy rear node
+		mRear = new Node();
+
+		mFront->next = mRear;
+		mFront->previous = nullptr;
+		mRear->next = nullptr;
+		mRear->previous = mFront;
+
 		mCount = 0;
 	}
 	
 	~List()
 	{
 		// we start at mFront instead of mFront->next because we can delete
-		// the dummy node.
+		// the dummy node. We also go the whole way to nullptr because we need
+		// to delete the rear dummy node.
 		Node *next;
 		for (Node *n = mFront; n != nullptr; n = next)
 		{
@@ -195,21 +208,20 @@ public:
 	 * Adds an item to the rear of the list.
 	 * @param item the data to store within the list.
 	 */
-	inline void add(T item)
+	inline void add(const T &item)
 	{
-		Node *node = new Node();
-		node->data = item;
-		node->next = nullptr;
+		Node *n = new Node();
+		n->data = item;
+		Node *prev = mRear->previous;
 
-		// attach to end of list
-		Node *n = mFront;
-		while (n->next != nullptr)
-			n = n->next;
-		n->next = node;
-		
+		n->next = mRear;
+		n->previous = prev;
+		prev->next = n;
+		mRear->previous = n;
+
 		++mCount;
 	}
-	
+
 	/**
 	 * Removes an item within the list, specified by the item itself.
 	 * @param item the item to remove within the list.
@@ -218,7 +230,7 @@ public:
 	inline bool remove(const T &item)
 	{
 		Node *previous = mFront;
-		for (Node *n = mFront->next; n != nullptr; n = n->next)
+		for (Node *n = mFront->next; n != mRear; n = n->next)
 		{
 			if (n->data == item)
 			{
@@ -264,7 +276,7 @@ public:
 	 */
 	inline bool contains(const T &item) const
 	{
-		for (Node *n = mFront->next; n != nullptr; n = n->next)
+		for (Node *n = mFront->next; n != mRear; n = n->next)
 		{
 			if (n->data == item)
 				return true;
@@ -278,7 +290,7 @@ public:
 	 */
 	inline bool isEmpty() const
 	{
-		return mFront->next == nullptr;
+		return mCount == 0;
 	}
 	
 	/**
@@ -288,6 +300,15 @@ public:
 	inline Node* front() const
 	{
 		return mFront->next;
+	}
+
+	/**
+	 * Grabs the last element in the list.
+	 * @return the last element or nullptr if the list is empty.
+	 */
+	inline Node* rear() const
+	{
+		return mRear->previous;
 	}
 	
 	/**
@@ -314,7 +335,7 @@ public:
 	 */
 	inline Iterator end()
 	{
-		return Iterator(nullptr);
+		return Iterator(mRear);
 	}
 	
 	/**
@@ -332,15 +353,23 @@ public:
 	 */
 	inline CIterator end() const
 	{
-		return CIterator(nullptr);
+		return CIterator(mRear);
 	}
 	
 private:
 	/**
 	 * A dummy node that is the start of the list.
-	 * mFront->next actually holds the first element.
+	 * mFront->next actually holds the first element, and if the element is mRear,
+	 * then the list is considered to be empty.
 	 */
 	Node *mFront;
+
+	/**
+	 * A dummy node that is the end of the list.
+	 * mRear->previous holds the last element, and if the element is mFront,
+	 * then the list is considered to be empty.
+	 */
+	Node *mRear;
 	
 	/**
 	 * The amount of elements that are within the list.
