@@ -6,7 +6,8 @@ A base library for C++11.
 2) Less Bloat - The STL is a huge toolbox. I doubt that I have ever even used half of what is available in the STL, and it keeps growing. Also, heavy use of the templates in the STL for Emscripten increases build sizes in the megabytes.
 3) Control - I like to have control over fixing bugs instead of relying on compiler vendors to hopefully fix the bugs (Some of the STL had regressions going from Visual studio 2010 and haven't been fixed just until the latest update to VS2015, or take the whole std::chrono debacle where the high precision timer wasn't being used for a long time)
 4) Debug times in some implementations are extremely slow because of error checking and exceptions. I realize that debug is supposed to be slower, but in my own opinion it was sometimes excessive.
-5) Personal Learning - I wanted to practice writing data structures, because I want too.
+5) OOP - Parts of the STL are really not true OOP where they should be. std::find vs a find method on a vector, for example, really sucks.
+6) Personal Learning - I wanted to practice writing data structures, because I want too.
 
 # License
 This library is licensed under the 3 clause BSD license. See LICENSE for more information.
