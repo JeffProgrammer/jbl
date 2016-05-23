@@ -57,11 +57,9 @@ Thread::Thread(threadFunction fn, void *arg)
 	mThreadData.fn = fn;
 	mThreadData.arg = arg;
 
-	ThreadData *d = new ThreadData{ fn, arg };
-
 #ifdef _WIN32
 	mDone = false;
-	mHandle = CreateThread(NULL, 0, Thread::win32ThreadWrapper, d, 0, &mThreadId);
+	mHandle = CreateThread(NULL, 0, Thread::win32ThreadWrapper, &mThreadData, 0, &mThreadId);
 	if (mHandle == NULL)
 		exit(-2);
 #endif
