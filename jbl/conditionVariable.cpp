@@ -35,7 +35,11 @@
 ConditionVariable::ConditionVariable()
 {
 #ifdef _WIN32
-	
+#if WINVER >= 0x0600
+	InitializeConditionVariable(&mConditionVariable);
+#else
+#error "Please implement condition variable workaround on Windows XP / Sever 2003"
+#endif
 #else
 	pthread_cond_init(&mConditionVar, nullptr);
 #endif
@@ -44,7 +48,13 @@ ConditionVariable::ConditionVariable()
 ConditionVariable::~ConditionVariable()
 {
 #ifdef _WIN32
-	
+#if WINVER >= 0x0600
+	// There is no need to delete a condition variable object, as there is no
+	// dynamic memory being allocated.
+	// http://stackoverflow.com/a/28981408
+#else
+#error "Please implement condition variable workaround on Windows XP / Sever 2003"
+#endif
 #else
 	pthread_cond_destroy(&mConditionVar);
 #endif
@@ -53,7 +63,11 @@ ConditionVariable::~ConditionVariable()
 void ConditionVariable::wait(Mutex *mutex)
 {
 #ifdef _WIN32
-	
+#if WINVER >= 0x0600
+	SleepConditionVariableCS(&mConditionVariable, &mutex->mMutex, INFINITE);
+#else
+#error "Please implement condition variable workaround on Windows XP / Sever 2003"
+#endif	
 #else
 	pthread_cond_wait(&mConditionVar, &mutex->mMutex);
 #endif
@@ -62,7 +76,11 @@ void ConditionVariable::wait(Mutex *mutex)
 void ConditionVariable::signal()
 {
 #ifdef _WIN32
-	
+#if WINVER >= 0x0600
+	WakeConditionVariable(&mConditionVariable);
+#else
+#error "Please implement condition variable workaround on Windows XP / Sever 2003"
+#endif
 #else
 	pthread_cond_signal(&mConditionVar);
 #endif
@@ -71,7 +89,11 @@ void ConditionVariable::signal()
 void ConditionVariable::signalAll()
 {
 #ifdef _WIN32
-	
+#if WINVER >= 0x0600
+	WakeAllConditionVariable(&mConditionVariable);
+#else
+#error "Please implement condition variable workaround on Windows XP / Sever 2003"
+#endif	
 #else
 	pthread_cond_broadcast(&mConditionVar);
 #endif
