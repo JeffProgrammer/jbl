@@ -56,7 +56,7 @@ private:
 #if WINVER >= 0x0600
 	CONDITION_VARIABLE mConditionVariable;
 #else
-#error "Please implement condition variable workaround on Windows XP / Sever 2003"
+#error "Please implement condition variable workaround on Windows XP / Server 2003"
 #endif
 #else
 	pthread_cond_t mConditionVar;
