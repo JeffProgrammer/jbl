@@ -22,6 +22,7 @@ set (JBL_SRC
 	jbl/list.h
 	jbl/mutex.h
 	jbl/mutex.cpp
+	jbl/stack.h
 	jbl/thread.h
 	jbl/thread.cpp
 	jbl/types.h
@@ -43,4 +44,7 @@ if (BuildJBLTests)
 
 	add_executable(ThreadingTest tests/testThreading.cpp)
 	target_link_libraries(ThreadingTest JBL)
+	
+	add_executable(StackTest tests/testStack.cpp)
+	target_link_libraries(StackTest JBL)
 endif()
