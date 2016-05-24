@@ -71,6 +71,7 @@ void producer(void *)
 	}
 	pcDoneMtx.lock();
 	pcDone = true;
+	cv.signal();
 	pcDoneMtx.unlock();
 }
 
@@ -78,16 +79,18 @@ void consumer(void *)
 {
 	while (true)
 	{
+		pcMutex.lock();
+		cv.wait(&pcMutex);
+	
 		pcDoneMtx.lock();
 		if (pcDone)
 		{
 			pcDoneMtx.unlock();
+			pcMutex.unlock();
 			break;
 		}
 		pcDoneMtx.unlock();
-		
-		pcMutex.lock();
-		cv.wait(&pcMutex);
+	
 		printf("%d\n", stack.getTop());
 		stack.pop();
 		pcMutex.unlock();
