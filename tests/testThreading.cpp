@@ -51,7 +51,7 @@ void myThreadFn(void *arg)
 	Thread::sleep(1000);
 }
 
-S32 main(S32 argc, const S8 **argv)
+S32 main(S32 argc, const char **argv)
 {
 	S32 x = 20;
 	Thread t(myThreadFn, &x);

@@ -32,7 +32,7 @@
 #include "jbl/types.h"
 #include "jbl/stack.h"
 
-S32 main(S32 argc, const S8 **argv)
+S32 main(S32 argc, const char **argv)
 {
 	Stack<S32> stack;
 	for (S32 i = 0; i < 30; ++i)

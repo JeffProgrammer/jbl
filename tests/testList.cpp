@@ -32,7 +32,7 @@
 #include "jbl/types.h"
 #include "jbl/list.h"
 
-S32 main(S32 argc, const S8 **argv)
+S32 main(S32 argc, const char **argv)
 {
    List<S32> list;
    for (S32 i = 0; i < 20; ++i)
