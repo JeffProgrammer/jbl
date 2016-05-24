@@ -41,8 +41,7 @@ S32 inc = 0;
 Mutex pcMutex;
 ConditionVariable cv;
 Stack<S32> stack;
-Mutex pcDoneMtx;
-bool pcDone = false;
+volatile bool pcDone = false;
 
 void incriment()
 {
@@ -67,12 +66,10 @@ void producer(void *)
 		stack.push(i);
 		pcMutex.unlock();
 		cv.signal();
-		Thread::sleep(500);
+		Thread::sleep(750);
 	}
-	pcDoneMtx.lock();
 	pcDone = true;
 	cv.signal();
-	pcDoneMtx.unlock();
 }
 
 void consumer(void *)
@@ -80,16 +77,14 @@ void consumer(void *)
 	while (true)
 	{
 		pcMutex.lock();
-		cv.wait(&pcMutex);
-	
-		pcDoneMtx.lock();
+		while (!pcDone && stack.isEmpty())
+			cv.wait(&pcMutex);
+
 		if (pcDone)
 		{
-			pcDoneMtx.unlock();
 			pcMutex.unlock();
 			break;
 		}
-		pcDoneMtx.unlock();
 	
 		printf("%d\n", stack.getTop());
 		stack.pop();
