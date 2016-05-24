@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// mutex.h
+// conditionVariable.h
 //
 // Copyright(c) 2016, Jeff Hutchinson
 // All rights reserved.
@@ -30,44 +30,33 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //-----------------------------------------------------------------------------
 
-#ifndef _JBL_MUTEX_H_
-#define _JBL_MUTEX_H_
+#ifndef _JBL_CONDITIONVARIABLE_H_
+#define _JBL_CONDITIONVARIABLE_H_
 
 #ifdef _WIN32
-#include <Windows.h>
+#include <windows.h>
 #else
 #include <pthread.h>
 #endif
 
-class ConditionVariable;
+#include "jbl/mutex.h"
 
-class Mutex
+class ConditionVariable
 {
-	friend class ConditionVariable;
 public:
-	Mutex();
-	~Mutex();
+	ConditionVariable();
+	~ConditionVariable();
 
-	void lock();
-	bool tryLock();
-	void unlock();
+	void wait(Mutex *mutex);
+	void signal();
+	void signalAll();
 
 private:
 #ifdef _WIN32
-	CRITICAL_SECTION mMutex;
+	
 #else
-	pthread_mutex_t mMutex;
+	pthread_cond_t mConditionVar;
 #endif
 };
 
-class LockGuard
-{
-public:
-	LockGuard(Mutex *mutex);
-	~LockGuard();
-
-private:
-	Mutex *mMutex;
-};
-
-#endif // _JBL_MUTEX_H_
+#endif // _JBL_CONDITIONVARIABLE_H_

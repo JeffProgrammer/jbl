@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// mutex.h
+// mutex.cpp
 //
 // Copyright(c) 2016, Jeff Hutchinson
 // All rights reserved.
@@ -30,44 +30,50 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //-----------------------------------------------------------------------------
 
-#ifndef _JBL_MUTEX_H_
-#define _JBL_MUTEX_H_
+#include "jbl/conditionVariable.h"
 
-#ifdef _WIN32
-#include <Windows.h>
-#else
-#include <pthread.h>
-#endif
-
-class ConditionVariable;
-
-class Mutex
+ConditionVariable::ConditionVariable()
 {
-	friend class ConditionVariable;
-public:
-	Mutex();
-	~Mutex();
-
-	void lock();
-	bool tryLock();
-	void unlock();
-
-private:
 #ifdef _WIN32
-	CRITICAL_SECTION mMutex;
+	
 #else
-	pthread_mutex_t mMutex;
+	pthread_cond_init(&mConditionVar, nullptr);
 #endif
-};
+}
 
-class LockGuard
+ConditionVariable::~ConditionVariable()
 {
-public:
-	LockGuard(Mutex *mutex);
-	~LockGuard();
+#ifdef _WIN32
+	
+#else
+	pthread_cond_destroy(&mConditionVar);
+#endif
+}
 
-private:
-	Mutex *mMutex;
-};
+void ConditionVariable::wait(Mutex *mutex)
+{
+#ifdef _WIN32
+	
+#else
+	pthread_cond_wait(&mConditionVar, &mutex->mMutex);
+#endif
+}
 
-#endif // _JBL_MUTEX_H_
+void ConditionVariable::signal()
+{
+#ifdef _WIN32
+	
+#else
+	pthread_cond_signal(&mConditionVar);
+#endif
+}
+
+void ConditionVariable::signalAll()
+{
+#ifdef _WIN32
+	
+#else
+	pthread_cond_broadcast(&mConditionVar);
+#endif
+}
+

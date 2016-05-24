@@ -32,9 +32,17 @@
 #include "jbl/types.h"
 #include "jbl/thread.h"
 #include "jbl/mutex.h"
+#include "jbl/conditionVariable.h"
+#include "jbl/stack.h"
 
 Mutex mutex;
 S32 inc = 0;
+
+Mutex pcMutex;
+ConditionVariable cv;
+Stack<S32> stack;
+Mutex pcDoneMtx;
+bool pcDone = false;
 
 void incriment()
 {
@@ -51,6 +59,41 @@ void myThreadFn(void *arg)
 	Thread::sleep(1000);
 }
 
+void producer(void *)
+{
+	for (S32 i = 0; i < 20; ++i)
+	{
+		pcMutex.lock();
+		stack.push(i);
+		pcMutex.unlock();
+		cv.signal();
+		Thread::sleep(500);
+	}
+	pcDoneMtx.lock();
+	pcDone = true;
+	pcDoneMtx.unlock();
+}
+
+void consumer(void *)
+{
+	while (true)
+	{
+		pcDoneMtx.lock();
+		if (pcDone)
+		{
+			pcDoneMtx.unlock();
+			break;
+		}
+		pcDoneMtx.unlock();
+		
+		pcMutex.lock();
+		cv.wait(&pcMutex);
+		printf("%d\n", stack.getTop());
+		stack.pop();
+		pcMutex.unlock();
+	}
+}
+
 S32 main(S32 argc, const char **argv)
 {
 	S32 x = 20;
@@ -59,6 +102,12 @@ S32 main(S32 argc, const char **argv)
 	t.join();
 	t2.join();
 
+	printf("Testing producer consumer condition variable.\n");
+	Thread c(consumer, nullptr);
+	Thread p(producer, nullptr);
+	c.join();
+	p.join();
+	
 #ifdef _WIN32
    system("pause");
 #endif
