@@ -49,7 +49,7 @@ public:
 	~Mutex();
 	
 	Mutex(const Mutex &) = delete;
-	Mutex(const Mutex &&) = delete;
+	Mutex(Mutex &&) = delete;
 
 	void lock();
 	bool tryLock();

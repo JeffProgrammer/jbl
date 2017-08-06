@@ -72,15 +72,53 @@ public:
 	 * @note The stack will not grow every time by this amount. Instead it will
 	 *  grow by as much as STACK_CHUNK_SIZE as needed.
 	 */
-	explicit Stack(const U32 reserve) : mCount(0), mCapacity(reserve)
+	explicit Stack(const S32 reserve) : mCount(0), mCapacity(reserve)
 	{
 		mArray = reinterpret_cast<T*>(calloc(reserve, sizeof(T)));
+	}
+	
+	Stack(const Stack &cpy)
+	{
+		mArray = reinterpret_cast<T*>(calloc(cpy.mCapacity, sizeof(T)));
+		memcpy(mArray, cpy.mArray, sizeof(T) * cpy.mCount);
+		
+		mCount = cpy.mCount;
+		mCapacity = cpy.mCapacity;
+	}
+	
+	Stack(Stack &&ref)
+	{
+		mArray = ref.mArray;
+		mCount = ref.mCount;
+		mCapacity = ref.mCapacity;
+		
+		ref.mArray = nullptr;
+		ref.mCount = 0;
+		ref.mCapacity = 0;
 	}
 
 	~Stack()
 	{
-		if (mArray)
+		if (mArray != nullptr)
 			free(mArray);
+	}
+	
+	Stack& operator=(Stack &&ref)
+	{
+		if (this != &ref)
+		{
+			if (mArray)
+				free(mArray);
+			
+			mArray = ref.mArray;
+			mCount = ref.mCount;
+			mCapacity = ref.mCapacity;
+			
+			ref.mArray = nullptr;
+			ref.mCount = 0;
+			ref.mCapacity = 0;
+		}
+		return *this;
 	}
 
 	/**
@@ -104,7 +142,7 @@ public:
 	 *  popZeroMem function.
 	 * @see popZeroMem, getTop
 	 */
-	void pop()
+	inline void pop()
 	{
 		assert(mCount);
 		--mCount;
@@ -120,7 +158,7 @@ public:
 	 *  pop method only.
 	 * @see pop, getTop
 	 */
-	void popZeroMem()
+	inline void popZeroMem()
 	{
 		assert(mCount);
 		--mCount;
@@ -134,7 +172,7 @@ public:
 	 *  yourself.
 	 * @see pop, popZeroMem
 	 */
-	T& getTop() const
+	inline T& getTop() const
 	{
 		assert(mCount);
 		return mArray[mCount - 1];
@@ -144,7 +182,7 @@ public:
 	 * Checks to see if the stack is empty.
 	 * @return true if the stack is empty, false otherwise.
 	 */
-	bool isEmpty() const
+	inline bool isEmpty() const
 	{
 		return mCount == 0;
 	}
@@ -153,7 +191,7 @@ public:
 	 * Gets the count of how many items there are on the stack.
 	 * @return the amount of items on the stack.
 	 */
-	U32 getCount() const
+	inline S32 getCount() const
 	{
 		return mCount;
 	}
@@ -167,12 +205,12 @@ private:
 	/**
 	 * The amount of items that are currently in the stack.
 	 */
-	U32 mCount;
+	S32 mCount;
 
 	/**
 	 * The capacity of the stack storage region.
 	 */
-	U32 mCapacity;
+	S32 mCapacity;
 
 	/**
 	 * Expands the stack region when it runs out of space. The stack size will

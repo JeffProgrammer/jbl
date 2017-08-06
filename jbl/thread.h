@@ -48,6 +48,9 @@ class Thread
 public:
 	Thread(threadFunction fn, void *arg);
 	~Thread();
+	
+	Thread(const Thread &) = delete;
+	Thread(Thread &&) = delete;
 
 	static void sleep(U32 milliseconds);
 

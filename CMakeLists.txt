@@ -22,7 +22,6 @@ set (JBL_SRC
 	jbl/conditionVariable.h
 	jbl/conditionVariable.cpp
 	jbl/lib.hpp
-	jbl/list.h
 	jbl/mutex.h
 	jbl/mutex.cpp
 	jbl/stack.h
@@ -41,9 +40,6 @@ option(BuildJBLTests "Build the JBL Test programs." ON)
 if (BuildJBLTests)
 	add_executable(VectorTest tests/testVector.cpp)
 	target_link_libraries(VectorTest JBL)
-
-	add_executable(ListTest tests/testList.cpp)
-	target_link_libraries(ListTest JBL)
 
 	add_executable(ThreadingTest tests/testThreading.cpp)
 	target_link_libraries(ThreadingTest JBL)

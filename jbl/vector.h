@@ -234,7 +234,7 @@ public:
 		ref.mCount = 0;
 	}
 	
-	T& operator=(Vector &&ref)
+	Vector& operator=(Vector &&ref)
 	{
 		if (this != &ref)
 		{
