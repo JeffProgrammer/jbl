@@ -30,6 +30,7 @@
 
 #include <stdio.h>
 #include "jbl/types.h"
+#include "jbl/lib.hpp"
 #include "jbl/vector.h"
 
 S32 main(S32 argc, const char **argv)
@@ -52,6 +53,13 @@ S32 main(S32 argc, const char **argv)
    {
       printf("%d\n", i);
    }
+	
+	// now move vec
+	Vector<S32> vec2(move_cast(vec));
+	for (S32 i : vec2)
+	{
+		printf("Moved %d\n", i);
+	}
 
 #ifdef _WIN32
    system("pause");

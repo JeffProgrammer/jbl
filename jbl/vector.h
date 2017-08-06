@@ -62,7 +62,7 @@ public:
 		 * @param count The amount of elements in the array.
 		 * @param position The starting position of the iterator.
 		 */
-		Iterator(T *ptr, U32 count, U32 position)
+		Iterator(T *ptr, S32 count, S32 position)
 		{
 			mCount = count;
 			mPosition = position;
@@ -103,12 +103,12 @@ public:
 		/**
 		 * The amount of elemens within the array.
 		 */
-		U32 mCount;
+		S32 mCount;
 		
 		/**
 		 * The position of the iterator.
 		 */
-		U32 mPosition;
+		S32 mPosition;
 		
 		/**
 		 * A pointer to the array.
@@ -131,7 +131,7 @@ public:
 		 * @param count The amount of elements in the array.
 		 * @param position The starting position of the iterator.
 		 */
-		CIterator(T *ptr, U32 count, U32 position)
+		CIterator(T *ptr, S32 count, S32 position)
 		{
 			mCount = count;
 			mPosition = position;
@@ -171,12 +171,12 @@ public:
 		/**
 		 * The amount of elemens within the array.
 		 */
-		U32 mCount;
+		S32 mCount;
 		
 		/**
 		 * The position of the iterator.
 		 */
-		U32 mPosition;
+		S32 mPosition;
 		
 		/**
 		 * A pointer to the array.
@@ -189,21 +189,17 @@ public:
 	 */
 	Vector()
 	{
-		mArray = reinterpret_cast<T*>(calloc(1, sizeof(T)));
-		mAllocSize = 1;
+		mArray = nullptr;
+		mAllocSize = 0;
 		mCount = 0;
 	}
 	
 	/**
 	 * Creates a vector of type T with an initial capacity.
-	 * @param capacity A power of 2 initial capacity of the vector.
+	 * @param capacity The capacity of the vector.
 	 */
-	Vector(U32 capacity)
+	Vector(S32 capacity)
 	{
-#ifndef NDEBUG
-		// Check to make sure that capacity is a power of 2.
-#endif
-		
 		mArray = reinterpret_cast<T*>(calloc(capacity, sizeof(T)));
 		mAllocSize = capacity;
 		mCount = 0;
@@ -214,10 +210,51 @@ public:
 	 */
 	~Vector()
 	{
-		if (mArray)
+		if (mArray != nullptr)
 			free(mArray);
 	}
 
+	Vector(const Vector &cpy)
+	{
+		mArray = reinterpret_cast<T*>(calloc(cpy.mAllocSize, sizeof(T)));
+		memcpy(mArray, cpy.mArray, sizeof(T) * cpy.mCount);
+		
+		mAllocSize = cpy.mAllocSize;
+		mCount = cpy.mCount;
+	}
+	
+	Vector(Vector &&ref)
+	{
+		mArray = ref.mArray;
+		mAllocSize = ref.mAllocSize;
+		mCount = ref.mCount;
+		
+		ref.mArray = nullptr;
+		ref.mAllocSize = 0;
+		ref.mCount = 0;
+	}
+	
+	T& operator=(Vector &&ref)
+	{
+		if (this != &ref)
+		{
+			if (mArray != nullptr)
+			{
+				// free our memory as we are being move assigned
+				free(mArray);
+			}
+			
+			mArray = ref.mArray;
+			mAllocSize = ref.mAllocSize;
+			mCount = ref.mCount;
+			
+			ref.mArray = nullptr;
+			ref.mAllocSize = 0;
+			ref.mCount = 0;
+		}
+		return *this;
+	}
+	
 	/**
 	 * Adds an element to the Vector. If there is not enough space,
 	 * more space will be allocated automatically behind the scenes.
@@ -234,7 +271,7 @@ public:
 	 * Grabs the amount of elements within the Vector.
 	 * @return The amount of elements in the vector.
 	 */
-	inline U32 count() const
+	inline S32 count() const
 	{
 		return mCount;
 	}
@@ -244,7 +281,7 @@ public:
 	 * @param index The location of the element.
 	 * @return The element at the specified index.
 	 */
-	inline T operator[](U32 index) const
+	inline T operator[](S32 index) const
 	{
 		assert(index >= 0 && index < mCount);
 		return mArray[index];
@@ -355,31 +392,31 @@ private:
 	/**
 	 * The amount of elements within the vector.
 	 */
-	U32 mCount;
+	S32 mCount;
 	
 	/**
 	 * The capacity of the vector.
 	 */
-	U32 mAllocSize;
+	S32 mAllocSize;
 	
 	/**
 	 * Expands the capacity of the array so that it automatically has
-	 * enough space. It is logrithmic growth.
+	 * enough space. It is 1.5x size growth
 	 */
 	void expand()
 	{
-		// bump size to next power of 2
-		mAllocSize = mAllocSize << 1;
-		
-		// if we already allocated 0xffffffff size of vector, we can't allocate more.
-		assert(mAllocSize != 0xffffffff);
+		mAllocSize = static_cast<S32>(max(1, mAllocSize) * 1.5f);
 
 		mArray = reinterpret_cast<T*>(realloc(mArray, mAllocSize * sizeof(T)));
 		
 		// we could potentially be allocating a LOT of memory. Check to make sure
 		// the allocation was successful.
 		if (mArray == nullptr)
+		{
+			// TODO: Implement some message box in here to say we are out of
+			// memory.
 			exit(-1);
+		}
 	}
 };
 

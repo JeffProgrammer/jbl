@@ -1,9 +1,9 @@
 cmake_minimum_required(VERSION 3.1.3)
+set(CMAKE_OSX_SYSROOT /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk)
 
 if (MSVC)
 	message("Using Toolset: ${CMAKE_VS_PLATFORM_TOOLSET}")
 
-	# TODO If we are using clang, do not set specific MSVC properties.
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP")
 else()
 	# Clang and GCC
@@ -21,6 +21,7 @@ set (JBL_SRC
 	jbl/compiler.h
 	jbl/conditionVariable.h
 	jbl/conditionVariable.cpp
+	jbl/lib.hpp
 	jbl/list.h
 	jbl/mutex.h
 	jbl/mutex.cpp
