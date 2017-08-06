@@ -47,6 +47,9 @@ class Mutex
 public:
 	Mutex();
 	~Mutex();
+	
+	Mutex(const Mutex &) = delete;
+	Mutex(const Mutex &&) = delete;
 
 	void lock();
 	bool tryLock();
