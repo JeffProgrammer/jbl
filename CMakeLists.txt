@@ -25,6 +25,8 @@ set (JBL_SRC
 	jbl/mutex.h
 	jbl/mutex.cpp
 	jbl/stack.h
+	jbl/string.hpp
+	jbl/string.cpp
 	jbl/thread.h
 	jbl/thread.cpp
 	jbl/types.h

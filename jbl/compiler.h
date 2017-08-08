@@ -25,6 +25,10 @@
 #ifndef _JBL_COMPILER_H_
 #define _JBL_COMPILER_H_
 
+#if defined(_DEBUG) || !defined(NDEBUG)
+	#define DEBUG_BUILD
+#endif
+
 #ifdef _MSC_VER
 	// We support compiler intrinsics on Microsoft's compilers.
 	#include <intrin.h>
@@ -35,6 +39,13 @@
 
 	// Macro to force inline a function
 	#define FORCE_INLINE __forceinline
+
+	// Macro for 32bit vs 64bit
+	#if defined(_M_X64)
+		#define IS_64_BIT
+	#else
+		#define IS_32_BIT
+	#endif
 #elif defined(__llvm__) || defined(__GNU_C__)
 	// Only X86 architecture provides support for SSE registers.
 	#if defined(__i386__) || defined(__x86_64__)
@@ -48,6 +59,13 @@
 
 	// Macro to force inline on a function
 	#define FORCE_INLINE __attribute__((always_inline))
+
+	// Macro for 32bit vs 64bit
+	#if defined(__x86_64__) || defined(__ppc64__)
+		#define IS_64_BIT
+	#else
+		#define IS_32_BIT
+	#endif
 #else
 	#error "Please implement these macros for your compiler."
 #endif
