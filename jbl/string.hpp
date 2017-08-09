@@ -34,9 +34,6 @@
 ///
 /// Also, the implementation of this code is branch heavy. This needs
 /// to be addressed eventually.
-///
-/// TODO: this string has a specific issue with adding strings at the 14th
-/// character. We need to investigate this.
 
 class String
 {
@@ -76,12 +73,6 @@ private:
 	char *mHeapBuffer;
 	S32 mCount;
 	S32 mCapacity;
-	
-#ifdef IS_32_BIT
-	// The above is 32byte aligned on 64bit since sizeof pointer is 8 bytes.
-	// On 32bit, it is only 28 bytes. Adding an additional 4 bytes.
-	S32 _padding;
-#endif
 };
 
 inline bool operator==(const String &lhs, const String &rhs)

@@ -219,7 +219,7 @@ const char String::operator[](S32 index) const
 
 const char* String::c_str() const
 {
-	return (mCount < Constants::eSSOContents) ? mStackBuffer : mHeapBuffer;
+	return (mCount < Constants::eSSO) ? mStackBuffer : mHeapBuffer;
 }
 
 void String::reserve(S32 size)
