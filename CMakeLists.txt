@@ -48,4 +48,7 @@ if (BuildJBLTests)
 
 	add_executable(StackTest tests/testStack.cpp)
 	target_link_libraries(StackTest JBL)
+
+	add_executable(StringTest tests/testString.cpp)
+	target_link_libraries(StringTest JBL)
 endif()

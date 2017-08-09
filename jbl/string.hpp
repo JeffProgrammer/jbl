@@ -29,6 +29,15 @@
 #include "jbl/lib.hpp"
 #include "jbl/types.h"
 
+/// Note: This implementation of small string optimization needs massive
+/// improvements to get the most out of SSO.
+///
+/// Also, the implementation of this code is branch heavy. This needs
+/// to be addressed eventually.
+///
+/// TODO: this string has a specific issue with adding strings at the 14th
+/// character. We need to investigate this.
+
 class String
 {
 	enum Constants

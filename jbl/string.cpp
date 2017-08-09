@@ -48,7 +48,9 @@ String::String(const char *str)
 	else
 	{
 		mCapacity = mCount;
-		mHeapBuffer = reinterpret_cast<char*>(calloc(mCount, sizeof(char)));
+		mHeapBuffer = reinterpret_cast<char*>(calloc(mCount + 1, sizeof(char)));
+		memcpy(mHeapBuffer, str, mCount * sizeof(char));
+		mHeapBuffer[mCount] = 0x0; // Null terminator
 	}
 }
 
@@ -96,6 +98,8 @@ String& String::operator=(const String &str)
 	{
 		mCapacity = str.mCapacity;
 		mHeapBuffer = reinterpret_cast<char*>(calloc(mCount + 1, sizeof(char)));
+		memcpy(mHeapBuffer, str.mHeapBuffer, mCount * sizeof(char));
+		mHeapBuffer[mCount] = 0x0; // Null terminator
 	}
 	
 	return *this;
@@ -145,13 +149,21 @@ String String::operator+(const String &str)
 String& String::operator+=(const String &str)
 {
 	S32 count = mCount + str.mCount;
-	if (count >= Constants::eSSOContents)
+	if (count >= Constants::eSSO)
 	{
 		if (mHeapBuffer != nullptr)
 		{
-			if (count + 1 < mCapacity)
+			// It must have been reserved then, since its empty.
+			if (mHeapBuffer[0] == 0x0)
 			{
-				memcpy(mHeapBuffer + mCount, str.mHeapBuffer, str.mCount * sizeof(char));
+				// We need to copy into the heap buffer from the stack.
+				memcpy(mHeapBuffer, mStackBuffer, Constants::eSSOContents * sizeof(char));
+			}
+			
+			if ((count + 1) < mCapacity)
+			{
+				memcpy(mHeapBuffer + mCount, str.c_str(), str.mCount * sizeof(char));
+				mCount = count;
 				mHeapBuffer[count] = 0x0; // Null terminator
 			}
 			else
@@ -159,14 +171,16 @@ String& String::operator+=(const String &str)
 				// Realloc
 				mCapacity = static_cast<S32>(mCapacity * 1.5f);
 				mHeapBuffer = reinterpret_cast<char*>(realloc(mHeapBuffer, mCapacity * sizeof(char)));
-				memcpy(mHeapBuffer + mCount, str.mHeapBuffer, str.mCount * sizeof(char));
+				memcpy(mHeapBuffer + mCount, str.c_str(), str.mCount * sizeof(char));
+				mCount = count;
 				mHeapBuffer[count] = 0x0; // Null terminator
 			}
 		}
 		else
 		{
 			mHeapBuffer = reinterpret_cast<char*>(calloc(count + 1, sizeof(char)));
-			memcpy(mHeapBuffer, str.mHeapBuffer, str.mCount * sizeof(char));
+			memcpy(mHeapBuffer, mStackBuffer, Constants::eSSOContents * sizeof(char));
+			memcpy(mHeapBuffer + mCount, str.c_str(), str.mCount * sizeof(char));
 			mCount = count;
 			mCapacity = mCount;
 		}
@@ -174,6 +188,7 @@ String& String::operator+=(const String &str)
 	else
 	{
 		memcpy(mStackBuffer + mCount, str.mStackBuffer, sizeof(char) * str.mCount);
+		mCount += str.mCount;
 	}
 	return *this;
 }
