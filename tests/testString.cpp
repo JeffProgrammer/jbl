@@ -66,6 +66,13 @@ S32 main(S32 argc, const char **argv)
 		printf("addedString at %d, %s\n", i, addedString.c_str());
 	}
 
+	String jeef1 = "Hi Jeef!";
+	String jeef2 = "Hi Jeef!";
+	if (jeef1 == jeef2)
+		printf("The jeef's are equal!\n");
+	else
+		printf("The jeef's are not equal. This is a failure!\n");
+	
 #ifdef _WIN32
    system("pause");
 #endif
