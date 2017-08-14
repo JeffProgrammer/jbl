@@ -31,24 +31,25 @@
 //-----------------------------------------------------------------------------
 
 #include <assert.h>
+#define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
 #include "jbl/conditionVariable.h"
 
 bool ConditionVariable::sInitialized = false;
 #ifdef _WIN32
-	bool ConditionVariable::sIsVistaOrGreater = false;
+	bool ConditionVariable::sIsNativeSupport = false;
 #endif
 
 void ConditionVariable::init()
 {
 #ifdef _WIN32
-	auto lib = LoadLibrary("NTdll.dll");
+	// Windows Vista+ has native condition variables. Any OS below
+	// needs a proper work around.
+	auto lib = LoadLibrary("kernel32.dll");
 	assert(lib);
-	auto fn = GetProcAddress(lib, "IsWindowsVistaOrGreater");
-	if (fn != nullptr)
-		sIsVistaOrGreater = fn();
-	else
-		sIsVistaOrGreater = false;
+	auto fn = GetProcAddress(lib, "InitializeConditionVariable");
+	if (fn)
+		sIsNativeSupport = true;
 	FreeLibrary(lib);
 #endif
 	
@@ -57,10 +58,11 @@ void ConditionVariable::init()
 
 ConditionVariable::ConditionVariable()
 {
-	assert(sInitialized);
+	if (!sInitialized)
+		init();
 	
 #ifdef _WIN32
-	if (sIsVistaOrGreater)
+	if (sIsNativeSupport)
 	{
 		InitializeConditionVariable(&mConditionVariable);
 	}
@@ -86,7 +88,7 @@ ConditionVariable::~ConditionVariable()
 	
 #ifdef _WIN32
 	// Vista condition variable has no cleanup. See MSDN for more information.
-	if (!sIsVistaOrGreater)
+	if (!sIsNativeSupport)
 	{
 		DeleteCriticalSection(&mLegacyConditionVariable.waitersCountLock);
 		
@@ -104,7 +106,7 @@ void ConditionVariable::wait(Mutex *mutex)
 	assert(sInitialized);
 	
 #ifdef _WIN32
-	if (sIsVistaOrGreater)
+	if (sIsNativeSupport)
 	{
 		SleepConditionVariableCS(&mConditionVariable, &mutex->mMutex, INFINITE);
 	}
@@ -147,7 +149,7 @@ void ConditionVariable::signal()
 	assert(sInitialized);
 	
 #ifdef _WIN32
-	if (sIsVistaOrGreater)
+	if (sIsNativeSupport)
 	{
 		WakeConditionVariable(&mConditionVariable);
 	}
@@ -173,7 +175,7 @@ void ConditionVariable::signalAll()
 	assert(sInitialized);
 	
 #ifdef _WIN32
-	if (sIsVistaOrGreater)
+	if (sIsNativeSupport)
 	{
 		WakeAllConditionVariable(&mConditionVariable);
 	}
