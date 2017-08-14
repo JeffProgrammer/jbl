@@ -21,6 +21,7 @@
 //-----------------------------------------------------------------------------
 
 #include <stdio.h>
+#include <stdlib.h>
 #include "jbl/types.h"
 #include "jbl/lib.hpp"
 #include "jbl/string.hpp"

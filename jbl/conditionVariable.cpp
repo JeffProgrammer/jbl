@@ -31,9 +31,7 @@
 //-----------------------------------------------------------------------------
 
 #include <assert.h>
-#ifdef _WIN32
-#include <VersionHelpers.h>
-#endif
+#include <Windows.h>
 #include "jbl/conditionVariable.h"
 
 bool ConditionVariable::sInitialized = false;
@@ -44,7 +42,14 @@ bool ConditionVariable::sInitialized = false;
 void ConditionVariable::init()
 {
 #ifdef _WIN32
-	sIsVistaOrGreater = IsWindowsVistaOrGreater();
+	auto lib = LoadLibrary("NTdll.dll");
+	assert(lib);
+	auto fn = GetProcAddress(lib, "IsWindowsVistaOrGreater");
+	if (fn != nullptr)
+		sIsVistaOrGreater = fn();
+	else
+		sIsVistaOrGreater = false;
+	FreeLibrary(lib);
 #endif
 	
 	sInitialized = true;
@@ -65,10 +70,10 @@ ConditionVariable::ConditionVariable()
 		InitializeCriticalSection(&mLegacyConditionVariable.waitersCountLock);
 		
 		// Auto Reset Event
-		mLegacyConditionVariable.events[eSIGNAL] = CreateEvent(NULL, FALSE, FALSE, NULL);
+		mLegacyConditionVariable.events[Win32LegacyConditionVariable::eSIGNAL] = CreateEvent(NULL, FALSE, FALSE, NULL);
 		
 		// Manual Reset Event
-		mLegacyConditionVariable.events[eBROADCAST] = CreateEvent(NULL, TRUE, FALSE, NULL);
+		mLegacyConditionVariable.events[Win32LegacyConditionVariable::eBROADCAST] = CreateEvent(NULL, TRUE, FALSE, NULL);
 	}
 #else
 	pthread_cond_init(&mConditionVar, nullptr);
@@ -86,8 +91,8 @@ ConditionVariable::~ConditionVariable()
 		DeleteCriticalSection(&mLegacyConditionVariable.waitersCountLock);
 		
 		// Kill events
-		CloseHandle(mLegacyConditionVariable.events[eSIGNAL]);
-		CloseHandle(mLegacyConditionVariable.events[eBROADCAST]);
+		CloseHandle(mLegacyConditionVariable.events[Win32LegacyConditionVariable::eSIGNAL]);
+		CloseHandle(mLegacyConditionVariable.events[Win32LegacyConditionVariable::eBROADCAST]);
 	}
 #else
 	pthread_cond_destroy(&mConditionVar);
@@ -105,32 +110,32 @@ void ConditionVariable::wait(Mutex *mutex)
 	}
 	else
 	{
-		EnterCriticalSection(&mLegacyConditionVariable.watiersCountLock);
+		EnterCriticalSection(&mLegacyConditionVariable.waitersCountLock);
 		{
 			mLegacyConditionVariable.waitersCount++;
 		}
-		LeaveCriticalSection(&mLegacyConditionVariable.watiersCountLock);
+		LeaveCriticalSection(&mLegacyConditionVariable.waitersCountLock);
 		
-		mutex.unlock();
+		mutex->unlock();
 		
 		int result = WaitForMultipleObjects(2, mLegacyConditionVariable.events, FALSE, INFINITE);
 
 		int lastWaiter = 0;
-		EnterCriticalSection(&mLegacyConditionVariable.watiersCountLock);
+		EnterCriticalSection(&mLegacyConditionVariable.waitersCountLock);
 		{
 			mLegacyConditionVariable.waitersCount--;
-			lastWaiter = result == WAIT_OBJECT_0 + eBROADCAST
-				&& mLegacyCondtionVariable.waitersCount == 0;
+			lastWaiter = result == WAIT_OBJECT_0 + Win32LegacyConditionVariable::eBROADCAST
+				&& mLegacyConditionVariable.waitersCount == 0;
 		}
-		LeaveCriticalSection(&mLegacyConditionVariable.watiersCountLock);
+		LeaveCriticalSection(&mLegacyConditionVariable.waitersCountLock);
 
 		if (lastWaiter)
 		{
 			// Last waiter to be notified, reset manual event.
-			ResetEvent(mLegacyConditionVariable.events[eBROADCAST]);
+			ResetEvent(mLegacyConditionVariable.events[Win32LegacyConditionVariable::eBROADCAST]);
 		}
 		
-		mutex.lock();
+		mutex->lock();
 	}
 #else
 	pthread_cond_wait(&mConditionVar, &mutex->mMutex);
@@ -148,14 +153,14 @@ void ConditionVariable::signal()
 	}
 	else
 	{
-		EnterCriticalSection(&mLegacyConditionVariable.watiersCountLock);
+		EnterCriticalSection(&mLegacyConditionVariable.waitersCountLock);
 		int hasWaiters = mLegacyConditionVariable.waitersCount > 0;
-		LeaveCriticalSection(&mLegacyConditionVariable.watiersCountLock);
+		LeaveCriticalSection(&mLegacyConditionVariable.waitersCountLock);
 		
-		if (hsaWaiters)
+		if (hasWaiters)
 		{
 			// Go ahead and signal
-			SetEvent(mLegacyConditionVariable.events[eSIGNAL]);
+			SetEvent(mLegacyConditionVariable.events[Win32LegacyConditionVariable::eSIGNAL]);
 		}
 	}
 #else
@@ -174,14 +179,14 @@ void ConditionVariable::signalAll()
 	}
 	else
 	{
-		EnterCriticalSection(&mLegacyConditionVariable.watiersCountLock);
+		EnterCriticalSection(&mLegacyConditionVariable.waitersCountLock);
 		int hasWaiters = mLegacyConditionVariable.waitersCount > 0;
-		LeaveCriticalSection(&mLegacyConditionVariable.watiersCountLock);
+		LeaveCriticalSection(&mLegacyConditionVariable.waitersCountLock);
 		
-		if (hsaWaiters)
+		if (hasWaiters)
 		{
 			// Go ahead and broadcast
-			SetEvent(mLegacyConditionVariable.events[eBROADCAST]);
+			SetEvent(mLegacyConditionVariable.events[Win32LegacyConditionVariable::eBROADCAST]);
 		}
 	}
 #else

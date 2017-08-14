@@ -52,7 +52,7 @@ private:
 	
 #ifdef _WIN32
 	CONDITION_VARIABLE mConditionVariable;
-	static bool sIsVistaOrGreater = false;
+	static bool sIsVistaOrGreater;
 	
 	// This is here for windows NT 5.x compatability.
 	// NT 6.0+ uses the condition variable. Below that it doesn't exist.
