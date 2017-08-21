@@ -125,9 +125,9 @@ public:
 
 		for (S32 i = 0; i < TABLE_SIZE; ++i)
 		{
-			mTable[i].data = calloc(1, sizeof(Cell::Data));
+			mTable[i].data = calloc(2, sizeof(Cell::Data));
 			mTable[i].length = 0;
-			mTable[i].capacity = 1;
+			mTable[i].capacity = 2;
 		}
 	}
 
