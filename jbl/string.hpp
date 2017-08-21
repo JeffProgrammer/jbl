@@ -84,7 +84,7 @@ inline bool operator==(const String &lhs, const String &rhs)
 
 	const char *lStr = lhs.c_str();
 	const char *rStr = rhs.c_str();
-	
+
 	while (--length >= 0)
 	{
 		if (lStr[length] != rStr[length])
