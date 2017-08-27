@@ -6,13 +6,15 @@ A base library for C++11 and beyond.
 
 2) Consistency - The lot of implementations of the STL are implementation defined. I want a toolbox that I can use across multiple toolchains and be the same. For example, Small String Optimization inside of my String library.
 
-3) Less Bloat - The STL is a huge toolbox. I doubt that I have ever even used half of what is available in the STL, and it keeps growing. Also, heavy use of the templates in the STL for Emscripten increases build sizes in the megabytes.
+3) Less Bloat - The STL is a huge toolbox. I doubt that I have ever even used half of what is available in the STL, and it keeps growing. Look at the bloat with streams...
 
 4) Control - I like to have control over fixing bugs instead of relying on compiler vendors to hopefully fix the bugs (Some of the STL had regressions going from Visual studio 2010 and haven't been fixed just until the latest update to VS2015, or take the whole std::chrono debacle where the high precision timer wasn't being used for a long time)
 
-5) Debug times in some implementations are extremely slow because of error checking and exceptions. I realize that debug is supposed to be slower, but in my own opinion it was sometimes excessive.
+5) Performance - Take std::unordered_map and how many different heap allocations it does. Sure, I could go out of my way to write a custom allocator. Also, there are quite a few inefficiencies between standard libraries versions. For example, small string optimization is implemented in some versions of the STL while others are not. I want consistency in performance.
 
-6) Personal Learning - I wanted to practice writing data structures, because I want to.
+6) Debug times in some implementations are extremely slow because of error checking and exceptions. I realize that debug is supposed to be slower, but in my own opinion it was sometimes excessive.
+
+7) Personal Learning - I wanted to practice writing data structures and understand the work that the STL hides from the programmer.
 
 # Compilers tested:
 
