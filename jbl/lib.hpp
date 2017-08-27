@@ -25,6 +25,7 @@
 #ifndef _JBL_LIB_HPP_
 #define _JBL_LIB_HPP_
 
+#include <string.h>
 #include "jbl/compiler.h"
 #include "jbl/types.h"
 
@@ -44,6 +45,21 @@ template<typename T>
 FORCE_INLINE T min(T a, T b)
 {
 	return (a < b) ? a : b;
+}
+
+// Equals override.
+template<typename T> FORCE_INLINE bool equals(const T &lhs, const T &rhs);
+
+template<typename T>
+FORCE_INLINE bool equals(const T &lhs, const T &rhs)
+{
+	return lhs == rhs;
+}
+
+template<>
+FORCE_INLINE bool equals(const char* const &lhs, const char *const &rhs)
+{
+	return strcmp(lhs, rhs) == 0;
 }
 
 #endif // _JBL_LIB_H_

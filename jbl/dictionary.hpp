@@ -30,29 +30,27 @@
 #include <type_traits>
 
 #include <stdlib.h>
-#include <string.h>
 #include "types.h"
 #include "compiler.h"
+#include "string.hpp"
+#include "memoryChunker.hpp"
 
 template<typename T>
 FORCE_INLINE size_t HashFunction(const T &ref);
 
 template<typename T>
-FORCE_INLINE size_t HashFunction(const std::enable_if<std::is_arithmetic<T>, T>::type &ref)
+FORCE_INLINE size_t HashFunction(const T &ref)
 {
-	// Primitive type hashing. Just return the value.
-	return ref;
-}
-
-template<typename T, S32 MODULUS_SIZE = 32>
-FORCE_INLINE size_t HashFunction(const std::enable_if<std::is_pointer<T>, T>::type &ref)
-{
-	// Pointer hashing. Just return the numeric address.
-	return reinterpret_cast<size_t>(ref);
+	// Pointers just take the address.
+	// Primitive types just return.
+	if constexpr (std::is_pointer<T>>::value)
+		return reinterpret_cast<size_t>(ref);
+	else
+		return ref;
 }
 
 template<>
-FORCE_INLINE size_t HashFunction(const char* const &ref)
+FORCE_INLINE size_t HashFunction(const String &ref)
 {
 	// string hashing. Use 32bit FNV-1a algorithm. The algorithm is in the public domain.
 
@@ -60,8 +58,8 @@ FORCE_INLINE size_t HashFunction(const char* const &ref)
 	constexpr U32 FNV_prime = 16777619;
 
 	U32 hash = offset_basis;
-	size_t length = strlen(ref);
-	for (size_t i = 0; i < length; ++i)
+	S32 length = ref.length();
+	for (S32 i = 0; i < length; ++i)
 	{
 		hash = hash ^ static_cast<size_t>(ref[i]);
 		hash = hash * FNV_prime;
@@ -75,67 +73,41 @@ class Dictionary
 private:
 	struct Cell
 	{
-		struct Data
-		{
-			Key key;
-			Value value;
-		};
-		Data *data;
-		S32 length;
-		S32 capacity;
+		Key key;
+		Value value;
+
+		Cell *next = nullptr;
 	};
 
-	constexpr S32 MAX_STACK_TABLE_SIZE = 32;
+	static constexpr S32 MAX_STACK_TABLE_SIZE = 32;
 
-	constexpr bool isHeapAllocated()
+	static constexpr bool isHeapAllocated()
 	{
 		return TABLE_SIZE > MAX_STACK_TABLE_SIZE;
 	}
 
-	typedef std::conditional<!isHeapAllocated(), Cell[MAX_STACK_TABLE_SIZE], Cell*> CellType;
-
-	// Equals override.
-	template<typename T> FORCE_INLINE bool equals(const T &lhs, const T &rhs);
-
-	template<typename T>
-	FORCE_INLINE bool Dictionary::equals(const T &lhs, const T &rhs)
-	{
-		return lhs == rhs;
-	}
-
-	template<>
-	FORCE_INLINE bool Dictionary::equals(const char* const &lhs, const char *const &rhs)
-	{
-		return strcmp(lhs, rhs) == 0;
-	}
+	typedef typename std::conditional<(TABLE_SIZE > MAX_STACK_TABLE_SIZE), Cell*, Cell[MAX_STACK_TABLE_SIZE]> CellType;
 
 	template<typename T>
 	FORCE_INLINE size_t hashWithTableSize(const T &ref)
 	{
-		return HashFunction(ref) % TABLE_SIZE;
+		return HashFunction(ref) % static_cast<size_t>(TABLE_SIZE);
 	}
 
 public:
 	Dictionary()
 	{
+		static_assert(!std::is_same<Key, const char*>::value, "You cannot use const char* as a type for your dictionary key type! Please use String instead.");
+		static_assert(!std::is_same<Value, const char*>::value, "You cannot use const char* as a type for your dictionary value type! Please use String instead.");
+
 		if constexpr (isHeapAllocated())
 		{
-			mTable = calloc(TABLE_SIZE, sizeof(Cell::Data*));
-		}
-
-		for (S32 i = 0; i < TABLE_SIZE; ++i)
-		{
-			mTable[i].data = calloc(2, sizeof(Cell::Data));
-			mTable[i].length = 0;
-			mTable[i].capacity = 2;
+			mTable = calloc(TABLE_SIZE, sizeof(Cell*));
 		}
 	}
 
 	~Dictionary()
 	{
-		for (S32 i = 0; i < TABLE_SIZE; ++i)
-			free(mTable[i].data);
-
 		// Only free if we are heap allocated.
 		if constexpr (isHeapAllocated())
 		{
@@ -148,8 +120,7 @@ public:
 		// Yes, I know this isn't O(1), but its still faster than doing a linear search
 		// over the entire data set. If there's only 1 in the 'bucket' then it is O(1)
 
-		size_t hash = hashWithTableSize(key);
-		for (const auto &kv : mTable[hash])
+		for (auto &kv = mTable[hash]; kv != nullptr; kv = kv->next)
 		{
 			if (equals(key, kv.key))
 				return kv.value;
@@ -162,20 +133,23 @@ public:
 		size_t hash = hashWithTableSize(key);
 		auto &ref = mTable[hash];
 
-		if (ref.length == ref.capacity)
-		{
-			// Go ahead and up the capacity. grow by 1.5x.
-			ref.capacity = static_cast<S32>(ref.capacity * 1.5f);
-			ref.data = realloc(ref.data, ref.capacity * sizeof(data));
-		}
+		Cell *newCell = mPool.alloc(sizeof(Cell));
+		
+		newCell->key = key;
+		newCell->value = value;
 
-		ref.data[ref.length].key = key;
-		ref.data[ref.length].value = value;
-		++ref.length;
+		// Attach to end of list
+		Cell *toAttach = ref;
+		while (toAttach)
+			toAttach = toAttach->next;
+		toAttach->next = newCell;
 	}
 
 private:
 	CellType mTable;
+
+	MemoryChunker<Cell> mPool;
 };
+
 
 #endif // _JBL_DICTIONARY_HPP_

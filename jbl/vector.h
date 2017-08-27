@@ -288,7 +288,7 @@ public:
 	{
 		for (U32 i = 0; i < mCount; ++i)
 		{
-			if (mArray[i] == item)
+			if (equals(mArray[i], item))
 				return true;
 		}
 		return false;
@@ -303,7 +303,7 @@ public:
 	{
 		for (U32 i = 0; i < mCount; ++i)
 		{
-			if (mArray[i] == item)
+			if (equals(mArray[i], item))
 			{
 				// shift everything down by 1 from that position to keep the array compact.
 				--mCount;

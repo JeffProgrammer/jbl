@@ -24,6 +24,7 @@
 #include "jbl/types.h"
 #include "jbl/lib.hpp"
 #include "jbl/vector.h"
+#include "jbl/dictionary.hpp"
 
 S32 main(S32 argc, const char **argv)
 {
@@ -52,6 +53,8 @@ S32 main(S32 argc, const char **argv)
 	{
 		printf("Moved %d\n", i);
 	}
+
+	Dictionary<S32, S32> kv;
 
 #ifdef _WIN32
    system("pause");

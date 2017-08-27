@@ -4,10 +4,10 @@ set(CMAKE_OSX_SYSROOT /Applications/Xcode.app/Contents/Developer/Platforms/MacOS
 if (MSVC)
 	message("Using Toolset: ${CMAKE_VS_PLATFORM_TOOLSET}")
 
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP")
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP /std:c++17")
 else()
 	# Clang and GCC
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -pthread")
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++1z -pthread")
 
 	# Specific Mac OSX stuff
 	if (APPLE)
@@ -25,6 +25,7 @@ set (JBL_SRC
 	jbl/conditionVariable.cpp
 	jbl/dictionary.hpp
 	jbl/lib.hpp
+	jbl/memoryChunker.hpp
 	jbl/mutex.h
 	jbl/mutex.cpp
 	jbl/stack.h

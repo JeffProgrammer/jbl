@@ -16,11 +16,8 @@ A base library for C++11 and beyond.
 
 # Compilers tested:
 
-* MSVC Community Edition 2015
 * MSVC Community Edition 2017
-* Apple XCode 7.0.1 with Clang
 * Apple XCode 8.3.3 with Clang
-* Clang 3.8
 
 # License
 This library has been relicensed under the MIT License, from the 3 Clause BSD License. See LICENSE for more information.
