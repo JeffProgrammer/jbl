@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// thread.h
+// conditionVariable.h
 //
 // Copyright (c) 2016-2017 Jeff Hutchinson
 //
@@ -22,52 +22,57 @@
 // SOFTWARE.
 //-----------------------------------------------------------------------------
 
-#ifndef _JBL_THREAD_H_
-#define _JBL_THREAD_H_
+#ifndef _JBL_CONDITIONVARIABLE_H_
+#define _JBL_CONDITIONVARIABLE_H_
 
 #ifdef _WIN32
-#include <Windows.h>
+#include <windows.h>
 #else
 #include <pthread.h>
 #endif
 
-#include "types.h"
+#include "mutex.hpp"
+#include "types.hpp"
 
-typedef void(*threadFunction)(void*);
-
-class Thread
+class ConditionVariable
 {
 public:
-	Thread(threadFunction fn, void *arg);
-	~Thread();
+	ConditionVariable();
+	~ConditionVariable();
+
+	void wait(Mutex *mutex);
+	void signal();
+	void signalAll();
+
+	// NOTE: this must be called prior to using condition variables.
+	static void init();
 	
-	Thread(const Thread &) = delete;
-	Thread(Thread &&) = delete;
-
-	static void sleep(U32 milliseconds);
-
-	void join();
-
 private:
-	struct ThreadData
-	{
-		threadFunction fn;
-		void *arg;
-	};
-
-	ThreadData mThreadData;
-	bool mDone;
-
-#ifdef _WIN32
-	HANDLE mHandle;
-	DWORD mThreadId;
-
-	static DWORD WINAPI win32ThreadWrapper(void *data);
-#else
-	pthread_t mThread;
+	static bool sInitialized;
 	
-	static void* pthreadThreadWrapper(void *data);
+#ifdef _WIN32
+	CONDITION_VARIABLE mConditionVariable;
+	static bool sIsNativeSupport;
+	
+	// This is here for windows NT 5.x compatability.
+	// NT 6.0+ uses the condition variable. Below that it doesn't exist.
+	struct Win32LegacyConditionVariable
+	{
+		enum
+		{
+			eSIGNAL = 0,
+			eBROADCAST = 1,
+			eMAXEVENTS = 2
+		};
+		
+		HANDLE events[eMAXEVENTS];
+		
+		U32 waitersCount;
+		CRITICAL_SECTION waitersCountLock;
+	} mLegacyConditionVariable;
+#else
+	pthread_cond_t mConditionVar;
 #endif
 };
 
-#endif // _JBL_THREAD_H_
+#endif // _JBL_CONDITIONVARIABLE_H_

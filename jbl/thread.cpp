@@ -23,7 +23,7 @@
 //-----------------------------------------------------------------------------
 
 #include <stdlib.h>
-#include "thread.h"
+#include "thread.hpp"
 
 #ifndef _WIN32
 #include <unistd.h>

@@ -25,9 +25,7 @@
 #ifndef _JBL_STRING_H_
 #define _JBL_STRING_H_
 
-#include "jbl/compiler.h"
-#include "jbl/lib.hpp"
-#include "jbl/types.h"
+#include "lib.hpp"
 
 /// Note: This implementation of small string optimization needs massive
 /// improvements to get the most out of SSO.

@@ -21,8 +21,8 @@
 //-----------------------------------------------------------------------------
 
 #include <stdio.h>
-#include "jbl/types.h"
-#include "jbl/stack.h"
+#include "jbl/types.hpp"
+#include "jbl/stack.hpp"
 
 S32 main(S32 argc, const char **argv)
 {

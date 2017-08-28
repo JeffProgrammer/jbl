@@ -20,21 +20,21 @@ include_directories(
 	${CMAKE_CURRENT_SOURCE_DIR}
 )
 set (JBL_SRC
-	jbl/compiler.h
-	jbl/conditionVariable.h
+	jbl/compiler.hpp
+	jbl/conditionVariable.hpp
 	jbl/conditionVariable.cpp
 	jbl/dictionary.hpp
 	jbl/lib.hpp
 	jbl/memoryChunker.hpp
-	jbl/mutex.h
+	jbl/mutex.hpp
 	jbl/mutex.cpp
-	jbl/stack.h
+	jbl/stack.hpp
 	jbl/string.hpp
 	jbl/string.cpp
-	jbl/thread.h
+	jbl/thread.hpp
 	jbl/thread.cpp
-	jbl/types.h
-	jbl/vector.h
+	jbl/types.hpp
+	jbl/vector.hpp
 )
 add_library(JBL ${JBL_SRC})
 

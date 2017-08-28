@@ -33,7 +33,7 @@
 #include <assert.h>
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
-#include "jbl/conditionVariable.h"
+#include "conditionVariable.hpp"
 
 bool ConditionVariable::sInitialized = false;
 #ifdef _WIN32

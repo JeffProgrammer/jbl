@@ -28,7 +28,7 @@
 #include <stdlib.h>
 #include <assert.h>
 #include <memory.h>
-#include "jbl/types.h"
+#include "types.hpp"
 
 /**
  * Implements a generic stack. The stack will grow but never shrink in size,

@@ -28,7 +28,7 @@
 #include <stdlib.h>
 #include <assert.h>
 #include <memory.h>
-#include "jbl/types.h"
+#include "types.hpp"
 
 /**
  * Implements a contiguous array that will automatically grow in size

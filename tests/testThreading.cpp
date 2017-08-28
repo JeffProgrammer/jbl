@@ -21,11 +21,11 @@
 //-----------------------------------------------------------------------------
 
 #include <stdio.h>
-#include "jbl/types.h"
-#include "jbl/thread.h"
-#include "jbl/mutex.h"
-#include "jbl/conditionVariable.h"
-#include "jbl/stack.h"
+#include "jbl/types.hpp"
+#include "jbl/thread.hpp"
+#include "jbl/mutex.hpp"
+#include "jbl/conditionVariable.hpp"
+#include "jbl/stack.hpp"
 
 Mutex mutex;
 S32 inc = 0;
