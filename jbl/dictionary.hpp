@@ -30,21 +30,21 @@
 #include "string.hpp"
 #include "memoryChunker.hpp"
 
-template<typename T>
+template<typename T, class Enable = void>
 struct HashFunction;
 
-template<typename T, TEMPLATE_IS_ENABLED_TRUE(std::is_pointer<T>::value)>
-struct HashFunction
+template<typename T>
+struct HashFunction<T*, typename std::enable_if<std::is_pointer<T>::value>::type>
 {
-	size_t operator()(T ref)
+	size_t operator()(T *ref)
 	{
 		// Pointers just take the address.
 		return reinterpret_cast<size_t>(ref);
 	}
 };
 
-template<typename T, TEMPLATE_IS_ENABLED_TRUE(std::is_arithmetic<T>::value)>
-struct HashFunction
+template<typename T>
+struct HashFunction<T, typename std::enable_if<std::is_arithmetic<T>::value>::type>
 {
 	size_t operator()(T ref)
 	{
@@ -53,10 +53,10 @@ struct HashFunction
 	}
 };
 
-template<typename T, TEMPLATE_IS_ENABLED_TRUE(std::is_same<const char*, T>::value)>
-struct HashFunction
+template<>
+struct HashFunction<String>
 {
-	size_t operator()(const char* ref)
+	size_t operator()(const String &ref)
 	{
 		// string hashing. Use 32bit FNV-1a algorithm. The algorithm is in the public domain.
 
@@ -74,7 +74,7 @@ struct HashFunction
 	}
 };
 
-template<typename Key, typename Value, struct Hash = HashFunction<Key>>
+template<typename Key, typename Value, typename Hash = HashFunction<Key>>
 class Dictionary
 {
 private:
@@ -94,7 +94,7 @@ private:
 	template<typename T>
 	FORCE_INLINE size_t hashWithTableSize(const T &ref)
 	{
-		return HashFunction(ref) % static_cast<size_t>(mTableSize);
+		return Hash(ref) % static_cast<size_t>(mTableSize);
 	}
 
 public:
@@ -104,7 +104,7 @@ public:
 		static_assert(!std::is_same<Value, const char*>::value, "You cannot use const char* as a type for your dictionary value type! Please use String instead.");
 
 		mTableSize = bucketSize;
-		mTable = calloc(bucketSize, sizeof(Cell*));
+		mTable = static_cast<TableCell*>(calloc(bucketSize, sizeof(Cell*)));
 	}
 
 	Dictionary(const Dictionary &) = delete;
