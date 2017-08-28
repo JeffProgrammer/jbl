@@ -25,49 +25,56 @@
 #ifndef _JBL_DICTIONARY_HPP_
 #define _JBL_DICTIONARY_HPP_
 
-// Exception: These are compile time and do not link with the code. 
-// Thus I will allow it.
-#include <type_traits>
-
 #include <stdlib.h>
-#include "types.h"
-#include "compiler.h"
+#include "lib.hpp"
 #include "string.hpp"
 #include "memoryChunker.hpp"
 
 template<typename T>
-FORCE_INLINE size_t HashFunction(const T &ref);
+struct HashFunction;
 
-template<typename T>
-FORCE_INLINE size_t HashFunction(const T &ref)
+template<typename T, TEMPLATE_IS_ENABLED_TRUE(std::is_pointer<T>::value)>
+struct HashFunction
 {
-	// Pointers just take the address.
-	// Primitive types just return.
-	if constexpr (std::is_pointer<T>>::value)
-		return reinterpret_cast<size_t>(ref);
-	else
-		return ref;
-}
-
-template<>
-FORCE_INLINE size_t HashFunction(const String &ref)
-{
-	// string hashing. Use 32bit FNV-1a algorithm. The algorithm is in the public domain.
-
-	constexpr U32 offset_basis = 2166136261;
-	constexpr U32 FNV_prime = 16777619;
-
-	U32 hash = offset_basis;
-	S32 length = ref.length();
-	for (S32 i = 0; i < length; ++i)
+	size_t operator()(T ref)
 	{
-		hash = hash ^ static_cast<size_t>(ref[i]);
-		hash = hash * FNV_prime;
+		// Pointers just take the address.
+		return reinterpret_cast<size_t>(ref);
 	}
-	return static_cast<size_t>(hash);
-}
+};
 
-template<typename Key, typename Value, S32 TABLE_SIZE = 32>
+template<typename T, TEMPLATE_IS_ENABLED_TRUE(std::is_arithmetic<T>::value)>
+struct HashFunction
+{
+	size_t operator()(T ref)
+	{
+		// Primitive types just return.
+		return static_cast<size_t>(ref);
+	}
+};
+
+template<typename T, TEMPLATE_IS_ENABLED_TRUE(std::is_same<const char*, T>::value)>
+struct HashFunction
+{
+	size_t operator()(const char* ref)
+	{
+		// string hashing. Use 32bit FNV-1a algorithm. The algorithm is in the public domain.
+
+		constexpr U32 offset_basis = 2166136261;
+		constexpr U32 FNV_prime = 16777619;
+
+		U32 hash = offset_basis;
+		S32 length = ref.length();
+		for (S32 i = 0; i < length; ++i)
+		{
+			hash = hash ^ static_cast<size_t>(ref[i]);
+			hash = hash * FNV_prime;
+		}
+		return static_cast<size_t>(hash);
+	}
+};
+
+template<typename Key, typename Value, struct Hash = HashFunction<Key>>
 class Dictionary
 {
 private:
@@ -79,51 +86,67 @@ private:
 		Cell *next = nullptr;
 	};
 
-	static constexpr S32 MAX_STACK_TABLE_SIZE = 32;
-
-	static constexpr bool isHeapAllocated()
+	struct TableCell : Cell
 	{
-		return TABLE_SIZE > MAX_STACK_TABLE_SIZE;
-	}
-
-	typedef typename std::conditional<(TABLE_SIZE > MAX_STACK_TABLE_SIZE), Cell*, Cell[MAX_STACK_TABLE_SIZE]> CellType;
+		bool hasData = false;
+	};
 
 	template<typename T>
 	FORCE_INLINE size_t hashWithTableSize(const T &ref)
 	{
-		return HashFunction(ref) % static_cast<size_t>(TABLE_SIZE);
+		return HashFunction(ref) % static_cast<size_t>(mTableSize);
 	}
 
 public:
-	Dictionary()
+	explicit Dictionary(S32 bucketSize)
 	{
 		static_assert(!std::is_same<Key, const char*>::value, "You cannot use const char* as a type for your dictionary key type! Please use String instead.");
 		static_assert(!std::is_same<Value, const char*>::value, "You cannot use const char* as a type for your dictionary value type! Please use String instead.");
 
-		if constexpr (isHeapAllocated())
-		{
-			mTable = calloc(TABLE_SIZE, sizeof(Cell*));
-		}
+		mTableSize = bucketSize;
+		mTable = calloc(bucketSize, sizeof(Cell*));
+	}
+
+	Dictionary(const Dictionary &) = delete;
+	Dictionary& operator=(const Dictionary &) = delete;
+
+	Dictionary(Dictionary &&dict)
+	{
+		mTableSize = dict.mTableSize;
+		mTable = ref.mTable;
+		mPool = move_cast(ref.mPool);
+
+		ref.mTable = nullptr;
 	}
 
 	~Dictionary()
 	{
-		// Only free if we are heap allocated.
-		if constexpr (isHeapAllocated())
-		{
-			free(mTable);
-		}
+		free(mTable);
+		mTable = nullptr;
 	}
 
-	Value& operator=(const Key &key)
+	Dictionary& operator=(Dictionary &&ref)
+	{
+		if (this != &ref)
+		{
+			// Free old contents of the table if the table was heap allocated.
+			free(mTable);
+
+			move(ref);
+		}
+		return *this;
+	}
+
+	Value& operator[](const Key &key)
 	{
 		// Yes, I know this isn't O(1), but its still faster than doing a linear search
 		// over the entire data set. If there's only 1 in the 'bucket' then it is O(1)
 
-		for (auto &kv = mTable[hash]; kv != nullptr; kv = kv->next)
+		size_t hash = hashWithTableSize(key);
+		for (Cell *kv = mTable[hash]; kv != nullptr; kv = kv->next)
 		{
-			if (equals(key, kv.key))
-				return kv.value;
+			if (equals(key, kv->key))
+				return kv->value;
 		}
 		return 0x0; // works for all types.
 	}
@@ -131,25 +154,35 @@ public:
 	void insert(const Key &key, const Value &value)
 	{
 		size_t hash = hashWithTableSize(key);
-		auto &ref = mTable[hash];
+		Cell *tableCell = mTable[hash];
 
-		Cell *newCell = mPool.alloc(sizeof(Cell));
-		
-		newCell->key = key;
-		newCell->value = value;
+		// first cell is always a TableCell not a Cell.
+		if (!static_cast<TableCell*>(tableCell)->hasData)
+		{
+			// First data hasn't been filled in.
+			tableCell->key = key;
+			tableCell->value = value;
+			static_cast<TableCell*>(tableCell)->hasData = true;
+		}
+		else
+		{
+			// Linked list chain.
+			while (tableCell->next != nullptr)
+				tableCell = tableCell->next;
+			
+			// Create next cell for next insert.
+			Cell *newCell = mPool.alloc(1);
+			mewCell->key = key;
+			newCell->value = value;
 
-		// Attach to end of list
-		Cell *toAttach = ref;
-		while (toAttach)
-			toAttach = toAttach->next;
-		toAttach->next = newCell;
+			tableCell->next = newCell;
+		}
 	}
 
 private:
-	CellType mTable;
-
+	TableCell* mTable;
+	size_t mTableSize;
 	MemoryChunker<Cell> mPool;
 };
-
 
 #endif // _JBL_DICTIONARY_HPP_

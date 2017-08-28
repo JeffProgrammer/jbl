@@ -67,6 +67,18 @@ public:
 		currentPage = startPage;
 	}
 
+	MemoryChunker(const MemoryChunker &) = delete; // Copy constructor not allowed for MemoryChunker
+	MemoryChunker& operator=(const MemoryChunker &) = delete; // Copy assignment not allowed for MemoryChunker
+
+	MemoryChunker(MemoryChunker &&ref)
+	{
+		startPage = ref.startPage;
+		currentPage = ref.currentPage;
+
+		ref.startPage = nullptr;
+		ref.currentPage = nullptr;
+	}
+
 	~MemoryChunker()
 	{
 		while (startPage)
@@ -78,9 +90,32 @@ public:
 		startPage = nullptr;
 	}
 
-	T* alloc(S32 size)
+	MemoryChunker& operator=(MemoryChunker &&ref)
 	{
-		if (static_cast<U32>(size) >= getPageSize())
+		if (this != &ref)
+		{
+			// Free any current memory.
+			while (startPage)
+			{
+				Page *next = startPage->next;
+				delete startPage;
+				startPage = next;
+			}
+
+			startPage = ref.startPage;
+			currentPage = ref.currentPage;
+
+			ref.startPage = nullptr;
+			ref.currentPage = nullptr;
+		}
+		return *this;
+	}
+
+	T* alloc(S32 count)
+	{
+		U32 size = (static_cast<U32>(count) * sizeof(T));
+
+		if (size >= getPageSize())
 		{
 			assert(false);
 			// TODO: log this or something. Out of memory we can't alloc more than
@@ -97,7 +132,7 @@ public:
 		
 		// Allocate.
 		const S32 newSize = static_cast<S32>(getPageSize()) - currentPage->freespaceLeft;
-		currentPage->freespaceLeft -= newSize;
+		currentPage->freespaceLeft -= size;
 
 		void *mem = &currentPage->memory[newSize];
 

@@ -25,6 +25,10 @@
 #ifndef _JBL_LIB_HPP_
 #define _JBL_LIB_HPP_
 
+// Exception: These are compile time and do not link with the code. 
+// Thus I will allow it.
+#include <type_traits>
+
 #include <string.h>
 #include "jbl/compiler.h"
 #include "jbl/types.h"
@@ -61,5 +65,10 @@ FORCE_INLINE bool equals(const char* const &lhs, const char *const &rhs)
 {
 	return strcmp(lhs, rhs) == 0;
 }
+
+// Template specialization enabled/disable of boolean flag
+// https://stackoverflow.com/a/16529561
+#define TEMPLATE_IS_ENABLED_TRUE(Condition) typename std::enable_if<Condition>::type* = nullptr
+#define TEMPLATE_IS_ENABLED_FALSE(Condition) typename std::enable_if<!Condition>::type* = nullptr
 
 #endif // _JBL_LIB_H_
