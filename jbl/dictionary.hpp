@@ -56,7 +56,7 @@ struct HashFunction<T, typename std::enable_if<std::is_arithmetic<T>::value>::ty
 template<>
 struct HashFunction<String>
 {
-	size_t operator()(const String &ref)
+	size_t operator()(String &ref)
 	{
 		// string hashing. Use 32bit FNV-1a algorithm. The algorithm is in the public domain.
 
@@ -92,7 +92,7 @@ private:
 	};
 
 	template<typename T>
-	FORCE_INLINE size_t hashWithTableSize(const T &ref)
+	FORCE_INLINE size_t hashWithTableSize(T &ref)
 	{
 		return Hash(ref) % static_cast<size_t>(mTableSize);
 	}
@@ -143,18 +143,22 @@ public:
 		// over the entire data set. If there's only 1 in the 'bucket' then it is O(1)
 
 		size_t hash = hashWithTableSize(key);
-		for (Cell *kv = mTable[hash]; kv != nullptr; kv = kv->next)
+		for (Cell *kv = static_cast<Cell*>(&mTable[hash]); kv != nullptr; kv = kv->next)
 		{
 			if (equals(key, kv->key))
 				return kv->value;
 		}
-		return 0x0; // works for all types.
+
+		// SHOULD NEVER HIT HERE.
+		assert(false);
+		Value v;
+		return v;
 	}
 
 	void insert(const Key &key, const Value &value)
 	{
 		size_t hash = hashWithTableSize(key);
-		Cell *tableCell = mTable[hash];
+		Cell *tableCell = &mTable[hash];
 
 		// first cell is always a TableCell not a Cell.
 		if (!static_cast<TableCell*>(tableCell)->hasData)
@@ -172,7 +176,7 @@ public:
 			
 			// Create next cell for next insert.
 			Cell *newCell = mPool.alloc(1);
-			mewCell->key = key;
+			newCell->key = key;
 			newCell->value = value;
 
 			tableCell->next = newCell;

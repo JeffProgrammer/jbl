@@ -18,6 +18,7 @@ endif()
 
 include_directories(
 	${CMAKE_CURRENT_SOURCE_DIR}
+	jbl
 )
 set (JBL_SRC
 	jbl/compiler.hpp
@@ -55,4 +56,7 @@ if (BuildJBLTests)
 
 	add_executable(StringTest tests/testString.cpp)
 	target_link_libraries(StringTest JBL)
+	
+	add_executable(DictionaryTest tests/testDictionary.cpp)
+	target_link_libraries(DictionaryTest JBL)
 endif()

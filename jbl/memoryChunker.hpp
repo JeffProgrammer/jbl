@@ -28,6 +28,7 @@
 #include <assert.h>
 #include <stdlib.h>
 #include <string.h>
+#include <new>
 #include "types.hpp"
 
 enum class MemoryChunkerPageSize : U32
@@ -136,7 +137,7 @@ public:
 
 		void *mem = &currentPage->memory[newSize];
 
-		return new (mem) T();
+		return new (mem) T;
 	}
 
 private:
