@@ -30,11 +30,11 @@
 #include "string.hpp"
 #include "memoryChunker.hpp"
 
-template<typename T, class Enable = void>
+template<class T>
 struct HashFunction;
 
-template<typename T>
-struct HashFunction<T*, typename std::enable_if<std::is_pointer<T>::value>::type>
+template<class T>
+struct HashFunction<T*>
 {
 	size_t operator()(T *ref)
 	{
@@ -43,20 +43,33 @@ struct HashFunction<T*, typename std::enable_if<std::is_pointer<T>::value>::type
 	}
 };
 
-template<typename T>
-struct HashFunction<T, typename std::enable_if<std::is_arithmetic<T>::value>::type>
-{
-	size_t operator()(T ref)
-	{
-		// Primitive types just return.
-		return static_cast<size_t>(ref);
-	}
-};
+#define IMPLEMENT_HASH_FUNCTION_PRIMITIVE(type) \
+template<>                                      \
+struct HashFunction<type>                       \
+{                                               \
+	size_t operator()(type ref)                 \
+    {                                           \
+		/* Primitive types just return. */      \
+		return static_cast<size_t>(ref);        \
+	}                                           \
+}
+
+IMPLEMENT_HASH_FUNCTION_PRIMITIVE(bool);
+IMPLEMENT_HASH_FUNCTION_PRIMITIVE(S8);
+IMPLEMENT_HASH_FUNCTION_PRIMITIVE(S16);
+IMPLEMENT_HASH_FUNCTION_PRIMITIVE(S32);
+IMPLEMENT_HASH_FUNCTION_PRIMITIVE(S64);
+IMPLEMENT_HASH_FUNCTION_PRIMITIVE(U8);
+IMPLEMENT_HASH_FUNCTION_PRIMITIVE(U16);
+IMPLEMENT_HASH_FUNCTION_PRIMITIVE(U32);
+IMPLEMENT_HASH_FUNCTION_PRIMITIVE(U64);
+IMPLEMENT_HASH_FUNCTION_PRIMITIVE(F32);
+IMPLEMENT_HASH_FUNCTION_PRIMITIVE(F64);
 
 template<>
 struct HashFunction<String>
 {
-	size_t operator()(String &ref)
+	size_t operator()(String ref) const
 	{
 		// string hashing. Use 32bit FNV-1a algorithm. The algorithm is in the public domain.
 
@@ -74,14 +87,54 @@ struct HashFunction<String>
 	}
 };
 
-template<typename Key, typename Value, typename Hash = HashFunction<Key>>
+/*
+// https://stackoverflow.com/a/8669543
+struct HashFunction
+{
+	template<typename T> size_t operator()(T &ref)
+	{
+		static_assert(false, "Need to specialize the hash function overloading");
+	}
+};
+/*
+template<typename T> size_t HashFunction::operator()(T* &ref)
+{
+	return reinterpret_cast<size_t>(ref);
+}
+*/
+
+/*
+template<> size_t HashFunction::operator()<S32>(S32 &ref) 
+{
+	return static_cast<size_t>(ref);
+}
+
+template<> size_t HashFunction::operator()<String>(String &ref) 
+{
+	// string hashing. Use 32bit FNV-1a algorithm. The algorithm is in the public domain.
+
+	constexpr U32 offset_basis = 2166136261;
+	constexpr U32 FNV_prime = 16777619;
+
+	U32 hash = offset_basis;
+	S32 length = ref.length();
+	for (S32 i = 0; i < length; ++i)
+	{
+		hash = hash ^ static_cast<size_t>(ref[i]);
+		hash = hash * FNV_prime;
+	}
+	return static_cast<size_t>(hash);
+}
+*/
+
+template<typename DictionaryKey, typename DictionaryValue, struct Hash = HashFunction<DictionaryKey>>
 class Dictionary
 {
 private:
 	struct Cell
 	{
-		Key key;
-		Value value;
+		DictionaryKey key;
+		DictionaryValue value;
 
 		Cell *next = nullptr;
 	};
@@ -94,14 +147,15 @@ private:
 	template<typename T>
 	FORCE_INLINE size_t hashWithTableSize(T &ref)
 	{
-		return Hash(ref) % static_cast<size_t>(mTableSize);
+		Hash b;
+		return b(ref) % static_cast<size_t>(mTableSize);
 	}
 
 public:
 	explicit Dictionary(S32 bucketSize)
 	{
-		static_assert(!std::is_same<Key, const char*>::value, "You cannot use const char* as a type for your dictionary key type! Please use String instead.");
-		static_assert(!std::is_same<Value, const char*>::value, "You cannot use const char* as a type for your dictionary value type! Please use String instead.");
+		static_assert(!std::is_same<DictionaryKey, const char*>::value, "You cannot use const char* as a type for your dictionary key type! Please use String instead.");
+		static_assert(!std::is_same<DictionaryValue, const char*>::value, "You cannot use const char* as a type for your dictionary value type! Please use String instead.");
 
 		mTableSize = bucketSize;
 		mTable = static_cast<TableCell*>(calloc(bucketSize, sizeof(Cell*)));
@@ -137,7 +191,7 @@ public:
 		return *this;
 	}
 
-	Value& operator[](const Key &key)
+	DictionaryValue& operator[](const DictionaryKey &key)
 	{
 		// Yes, I know this isn't O(1), but its still faster than doing a linear search
 		// over the entire data set. If there's only 1 in the 'bucket' then it is O(1)
@@ -151,11 +205,11 @@ public:
 
 		// SHOULD NEVER HIT HERE.
 		assert(false);
-		Value v;
+		DictionaryValue v;
 		return v;
 	}
 
-	void insert(const Key &key, const Value &value)
+	void insert(const DictionaryKey &key, const DictionaryValue &value)
 	{
 		size_t hash = hashWithTableSize(key);
 		Cell *tableCell = &mTable[hash];
