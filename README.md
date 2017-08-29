@@ -18,7 +18,8 @@ A base library for C++11 and beyond.
 
 # Compilers tested:
 
-* MSVC Community Edition 2017
+* MSVC Community Edition 2015 (Latest Update)
+* MSVC Community Edition 2017 (Latest Update)
 * Apple XCode 8.3.3 with Clang
 
 # License
