@@ -26,66 +26,8 @@
 #define _JBL_DICTIONARY_HPP_
 
 #include <stdlib.h>
-#include "lib.hpp"
-#include "string.hpp"
 #include "memoryChunker.hpp"
-
-template<class T>
-struct HashFunction;
-
-template<class T>
-struct HashFunction<T*>
-{
-	FORCE_INLINE size_t operator()(T *ref)
-	{
-		// Pointers just take the address.
-		return reinterpret_cast<size_t>(ref);
-	}
-};
-
-#define IMPLEMENT_HASH_FUNCTION_PRIMITIVE(type) \
-template<>                                      \
-struct HashFunction<type>                       \
-{                                               \
-	FORCE_INLINE size_t operator()(type ref)                 \
-    {                                           \
-		/* Primitive types just return. */      \
-		return static_cast<size_t>(ref);        \
-	}                                           \
-}
-
-IMPLEMENT_HASH_FUNCTION_PRIMITIVE(bool);
-IMPLEMENT_HASH_FUNCTION_PRIMITIVE(S8);
-IMPLEMENT_HASH_FUNCTION_PRIMITIVE(S16);
-IMPLEMENT_HASH_FUNCTION_PRIMITIVE(S32);
-IMPLEMENT_HASH_FUNCTION_PRIMITIVE(S64);
-IMPLEMENT_HASH_FUNCTION_PRIMITIVE(U8);
-IMPLEMENT_HASH_FUNCTION_PRIMITIVE(U16);
-IMPLEMENT_HASH_FUNCTION_PRIMITIVE(U32);
-IMPLEMENT_HASH_FUNCTION_PRIMITIVE(U64);
-IMPLEMENT_HASH_FUNCTION_PRIMITIVE(F32);
-IMPLEMENT_HASH_FUNCTION_PRIMITIVE(F64);
-
-template<>
-struct HashFunction<String>
-{
-	size_t operator()(String ref) const
-	{
-		// string hashing. Use 32bit FNV-1a algorithm. The algorithm is in the public domain.
-
-		constexpr U32 offset_basis = 2166136261;
-		constexpr U32 FNV_prime = 16777619;
-
-		U32 hash = offset_basis;
-		S32 length = ref.length();
-		for (S32 i = 0; i < length; ++i)
-		{
-			hash = hash ^ static_cast<size_t>(ref[i]);
-			hash = hash * FNV_prime;
-		}
-		return static_cast<size_t>(hash);
-	}
-};
+#include "hashFunction.hpp"
 
 template<typename DictionaryKey, typename DictionaryValue, class Hash = HashFunction<DictionaryKey>>
 class Dictionary
@@ -107,8 +49,8 @@ private:
 	template<typename T>
 	FORCE_INLINE size_t hashWithTableSize(T &ref)
 	{
-		Hash b;
-		return b(ref) % static_cast<size_t>(mTableSize);
+		Hash hash;
+		return hash(ref) % static_cast<size_t>(mTableSize);
 	}
 
 public:

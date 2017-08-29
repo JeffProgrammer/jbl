@@ -25,6 +25,7 @@ set (JBL_SRC
 	jbl/conditionVariable.hpp
 	jbl/conditionVariable.cpp
 	jbl/dictionary.hpp
+	jbl/hashFunction.hpp
 	jbl/lib.hpp
 	jbl/memoryChunker.hpp
 	jbl/mutex.hpp
