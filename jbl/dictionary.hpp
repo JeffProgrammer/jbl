@@ -163,10 +163,33 @@ public:
 				return kv->value;
 		}
 
-		// SHOULD NEVER HIT HERE.
-		assert(false);
-		DictionaryValue v;
-		return v;
+		// Perform an insertion of the key with blank value
+		{
+			TableCell *tableCell = &mTable[hash];
+
+			// first cell is always a TableCell not a Cell.
+			if (!tableCell->hasData)
+			{
+				// First data hasn't been filled in.
+				tableCell->key = key;
+				tableCell->hasData = true;
+				return tableCell->value;
+			}
+			else
+			{
+				// Linked list chain.
+				Cell *cell = static_cast<Cell*>(tableCell);
+				while (cell->next != nullptr)
+					cell = cell->next;
+
+				// Create next cell for next insert.
+				Cell *newCell = mPool.alloc(1);
+				newCell->key = key;
+
+				cell->next = newCell;
+				return newCell->value;
+			}
+		}
 	}
 
 	void insert(const DictionaryKey &key, const DictionaryValue &value)

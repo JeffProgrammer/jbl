@@ -4,10 +4,10 @@ set(CMAKE_OSX_SYSROOT /Applications/Xcode.app/Contents/Developer/Platforms/MacOS
 if (MSVC)
 	message("Using Toolset: ${CMAKE_VS_PLATFORM_TOOLSET}")
 
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP /std:c++17")
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP")
 else()
 	# Clang and GCC
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++1z -pthread")
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -pthread -Wall")
 
 	# Specific Mac OSX stuff
 	if (APPLE)
