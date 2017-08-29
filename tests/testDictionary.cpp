@@ -34,10 +34,20 @@ S32 main(S32 argc, const char **argv)
 	kv.insert("pq", 66);
 
 	// Now iterate
-	printf("First dictionary contents: \n");
+	printf("First dictionary contents:\n");
 	printf(" kv: %s, %d\n", "hello", kv["hello"]);
 	printf(" kv: %s, %d\n", "world", kv["world"]);
 	printf(" kv: %s, %d\n", "pq", kv["pq"]);
+
+	Dictionary<S32, S32> kvInts(5);
+	for (S32 i = 0; i < 1000; ++i)
+		kvInts.insert(i, i);
+
+	// Print out the 1-1000
+	// TODO: use iterator
+	printf("kvInts Dictionary Contents:\n");
+	for (S32 i = 0; i < 1000; i++)
+		printf(" kv: %d %d\n", i, kvInts[i]);
 
 #ifdef _WIN32
    system("pause");

@@ -64,7 +64,7 @@ public:
 		startPage{nullptr},
 		currentPage{nullptr} 
 	{
-		startPage = reinterpret_cast<Page*>(calloc(1, getPageSize()));
+		startPage = new Page();
 		currentPage = startPage;
 	}
 
@@ -126,16 +126,15 @@ public:
 		if (size >= currentPage->freespaceLeft)
 		{
 			// Allocate on new page.
-			Page *newPage = reinterpret_cast<Page*>(calloc(1, getPageSize()));
+			Page *newPage = new Page();
 			currentPage->next = newPage;
 			currentPage = newPage;
 		}
 		
 		// Allocate.
-		const S32 newSize = static_cast<S32>(getPageSize()) - currentPage->freespaceLeft;
-		currentPage->freespaceLeft -= size;
-
-		void *mem = &currentPage->memory[newSize];
+		const U32 offset = getFreespace() - static_cast<U32>(currentPage->freespaceLeft);
+		void *mem = &currentPage->memory[offset];
+		currentPage->freespaceLeft -= static_cast<S32>(size);
 
 		return new (mem) T;
 	}

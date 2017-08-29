@@ -36,7 +36,7 @@ struct HashFunction;
 template<class T>
 struct HashFunction<T*>
 {
-	size_t operator()(T *ref)
+	FORCE_INLINE size_t operator()(T *ref)
 	{
 		// Pointers just take the address.
 		return reinterpret_cast<size_t>(ref);
@@ -47,7 +47,7 @@ struct HashFunction<T*>
 template<>                                      \
 struct HashFunction<type>                       \
 {                                               \
-	size_t operator()(type ref)                 \
+	FORCE_INLINE size_t operator()(type ref)                 \
     {                                           \
 		/* Primitive types just return. */      \
 		return static_cast<size_t>(ref);        \
@@ -87,47 +87,7 @@ struct HashFunction<String>
 	}
 };
 
-/*
-// https://stackoverflow.com/a/8669543
-struct HashFunction
-{
-	template<typename T> size_t operator()(T &ref)
-	{
-		static_assert(false, "Need to specialize the hash function overloading");
-	}
-};
-/*
-template<typename T> size_t HashFunction::operator()(T* &ref)
-{
-	return reinterpret_cast<size_t>(ref);
-}
-*/
-
-/*
-template<> size_t HashFunction::operator()<S32>(S32 &ref) 
-{
-	return static_cast<size_t>(ref);
-}
-
-template<> size_t HashFunction::operator()<String>(String &ref) 
-{
-	// string hashing. Use 32bit FNV-1a algorithm. The algorithm is in the public domain.
-
-	constexpr U32 offset_basis = 2166136261;
-	constexpr U32 FNV_prime = 16777619;
-
-	U32 hash = offset_basis;
-	S32 length = ref.length();
-	for (S32 i = 0; i < length; ++i)
-	{
-		hash = hash ^ static_cast<size_t>(ref[i]);
-		hash = hash * FNV_prime;
-	}
-	return static_cast<size_t>(hash);
-}
-*/
-
-template<typename DictionaryKey, typename DictionaryValue, struct Hash = HashFunction<DictionaryKey>>
+template<typename DictionaryKey, typename DictionaryValue, class Hash = HashFunction<DictionaryKey>>
 class Dictionary
 {
 private:
@@ -158,7 +118,7 @@ public:
 		static_assert(!std::is_same<DictionaryValue, const char*>::value, "You cannot use const char* as a type for your dictionary value type! Please use String instead.");
 
 		mTableSize = bucketSize;
-		mTable = static_cast<TableCell*>(calloc(bucketSize, sizeof(Cell*)));
+		mTable = static_cast<TableCell*>(calloc(bucketSize, sizeof(TableCell)));
 	}
 
 	Dictionary(const Dictionary &) = delete;
@@ -212,28 +172,29 @@ public:
 	void insert(const DictionaryKey &key, const DictionaryValue &value)
 	{
 		size_t hash = hashWithTableSize(key);
-		Cell *tableCell = &mTable[hash];
+		TableCell *tableCell = &mTable[hash];
 
 		// first cell is always a TableCell not a Cell.
-		if (!static_cast<TableCell*>(tableCell)->hasData)
+		if (!tableCell->hasData)
 		{
 			// First data hasn't been filled in.
 			tableCell->key = key;
 			tableCell->value = value;
-			static_cast<TableCell*>(tableCell)->hasData = true;
+			tableCell->hasData = true;
 		}
 		else
 		{
 			// Linked list chain.
-			while (tableCell->next != nullptr)
-				tableCell = tableCell->next;
+			Cell *cell = static_cast<Cell*>(tableCell);
+			while (cell->next != nullptr)
+				cell = cell->next;
 			
 			// Create next cell for next insert.
 			Cell *newCell = mPool.alloc(1);
 			newCell->key = key;
 			newCell->value = value;
 
-			tableCell->next = newCell;
+			cell->next = newCell;
 		}
 	}
 
