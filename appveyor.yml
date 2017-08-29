@@ -8,3 +8,6 @@ before_build:
   - cmd: cd c:\jbl
   - cmd: echo "Starting build..."
   - cmd: cmake -G "Visual Studio 14 2015" -T "V140"
+  
+build:
+  project: Project.sln
