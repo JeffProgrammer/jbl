@@ -30,33 +30,46 @@
 #include "string.hpp"
 #include "memoryChunker.hpp"
 
-template<typename T, class Enable = void>
+template<class T>
 struct HashFunction;
 
-template<typename T>
-struct HashFunction<T*, typename std::enable_if<std::is_pointer<T>::value>::type>
+template<class T>
+struct HashFunction<T*>
 {
-	size_t operator()(T *ref)
+	FORCE_INLINE size_t operator()(T *ref)
 	{
 		// Pointers just take the address.
 		return reinterpret_cast<size_t>(ref);
 	}
 };
 
-template<typename T>
-struct HashFunction<T, typename std::enable_if<std::is_arithmetic<T>::value>::type>
-{
-	size_t operator()(T ref)
-	{
-		// Primitive types just return.
-		return static_cast<size_t>(ref);
-	}
-};
+#define IMPLEMENT_HASH_FUNCTION_PRIMITIVE(type) \
+template<>                                      \
+struct HashFunction<type>                       \
+{                                               \
+	FORCE_INLINE size_t operator()(type ref)                 \
+    {                                           \
+		/* Primitive types just return. */      \
+		return static_cast<size_t>(ref);        \
+	}                                           \
+}
+
+IMPLEMENT_HASH_FUNCTION_PRIMITIVE(bool);
+IMPLEMENT_HASH_FUNCTION_PRIMITIVE(S8);
+IMPLEMENT_HASH_FUNCTION_PRIMITIVE(S16);
+IMPLEMENT_HASH_FUNCTION_PRIMITIVE(S32);
+IMPLEMENT_HASH_FUNCTION_PRIMITIVE(S64);
+IMPLEMENT_HASH_FUNCTION_PRIMITIVE(U8);
+IMPLEMENT_HASH_FUNCTION_PRIMITIVE(U16);
+IMPLEMENT_HASH_FUNCTION_PRIMITIVE(U32);
+IMPLEMENT_HASH_FUNCTION_PRIMITIVE(U64);
+IMPLEMENT_HASH_FUNCTION_PRIMITIVE(F32);
+IMPLEMENT_HASH_FUNCTION_PRIMITIVE(F64);
 
 template<>
 struct HashFunction<String>
 {
-	size_t operator()(String &ref)
+	size_t operator()(String ref) const
 	{
 		// string hashing. Use 32bit FNV-1a algorithm. The algorithm is in the public domain.
 
@@ -74,14 +87,14 @@ struct HashFunction<String>
 	}
 };
 
-template<typename Key, typename Value, typename Hash = HashFunction<Key>>
+template<typename DictionaryKey, typename DictionaryValue, class Hash = HashFunction<DictionaryKey>>
 class Dictionary
 {
 private:
 	struct Cell
 	{
-		Key key;
-		Value value;
+		DictionaryKey key;
+		DictionaryValue value;
 
 		Cell *next = nullptr;
 	};
@@ -94,17 +107,18 @@ private:
 	template<typename T>
 	FORCE_INLINE size_t hashWithTableSize(T &ref)
 	{
-		return Hash(ref) % static_cast<size_t>(mTableSize);
+		Hash b;
+		return b(ref) % static_cast<size_t>(mTableSize);
 	}
 
 public:
 	explicit Dictionary(S32 bucketSize)
 	{
-		static_assert(!std::is_same<Key, const char*>::value, "You cannot use const char* as a type for your dictionary key type! Please use String instead.");
-		static_assert(!std::is_same<Value, const char*>::value, "You cannot use const char* as a type for your dictionary value type! Please use String instead.");
+		static_assert(!std::is_same<DictionaryKey, const char*>::value, "You cannot use const char* as a type for your dictionary key type! Please use String instead.");
+		static_assert(!std::is_same<DictionaryValue, const char*>::value, "You cannot use const char* as a type for your dictionary value type! Please use String instead.");
 
 		mTableSize = bucketSize;
-		mTable = static_cast<TableCell*>(calloc(bucketSize, sizeof(Cell*)));
+		mTable = static_cast<TableCell*>(calloc(bucketSize, sizeof(TableCell)));
 	}
 
 	Dictionary(const Dictionary &) = delete;
@@ -137,7 +151,7 @@ public:
 		return *this;
 	}
 
-	Value& operator[](const Key &key)
+	DictionaryValue& operator[](const DictionaryKey &key)
 	{
 		// Yes, I know this isn't O(1), but its still faster than doing a linear search
 		// over the entire data set. If there's only 1 in the 'bucket' then it is O(1)
@@ -151,35 +165,36 @@ public:
 
 		// SHOULD NEVER HIT HERE.
 		assert(false);
-		Value v;
+		DictionaryValue v;
 		return v;
 	}
 
-	void insert(const Key &key, const Value &value)
+	void insert(const DictionaryKey &key, const DictionaryValue &value)
 	{
 		size_t hash = hashWithTableSize(key);
-		Cell *tableCell = &mTable[hash];
+		TableCell *tableCell = &mTable[hash];
 
 		// first cell is always a TableCell not a Cell.
-		if (!static_cast<TableCell*>(tableCell)->hasData)
+		if (!tableCell->hasData)
 		{
 			// First data hasn't been filled in.
 			tableCell->key = key;
 			tableCell->value = value;
-			static_cast<TableCell*>(tableCell)->hasData = true;
+			tableCell->hasData = true;
 		}
 		else
 		{
 			// Linked list chain.
-			while (tableCell->next != nullptr)
-				tableCell = tableCell->next;
+			Cell *cell = static_cast<Cell*>(tableCell);
+			while (cell->next != nullptr)
+				cell = cell->next;
 			
 			// Create next cell for next insert.
 			Cell *newCell = mPool.alloc(1);
 			newCell->key = key;
 			newCell->value = value;
 
-			tableCell->next = newCell;
+			cell->next = newCell;
 		}
 	}
 
