@@ -2,13 +2,13 @@
 A base library for C++11 and beyond.
 
 # Build Status
-Windows [![Build status](https://ci.appveyor.com/api/projects/status/fn7iurg6s0trra3d?svg=true)](https://ci.appveyor.com/project/JeffProgrammer/jbl)
 
-Linux Clang [![BuildStatus](https://travis-matrix-badges.herokuapp.com/repos/JeffProgrammer/jbl/branches/master/1)](https://travis-ci.org/JeffProgrammer/jbl)
-
-Linux GCC [![BuildStatus](https://travis-matrix-badges.herokuapp.com/repos/JeffProgrammer/jbl/branches/master/2)](https://travis-ci.org/JeffProgrammer/jbl)
-
-MacOS Clang [![BuildStatus](https://travis-matrix-badges.herokuapp.com/repos/JeffProgrammer/jbl/branches/master/3)](https://travis-ci.org/JeffProgrammer/jbl)
+| Operating System | Compiler       | Status |
+| :--------------: | :------------: | :----: |
+| Windows          | MSVC 2015/2017 | [![Build status](https://ci.appveyor.com/api/projects/status/fn7iurg6s0trra3d?svg=true)](https://ci.appveyor.com/project/JeffProgrammer/jbl) |
+| Linux            | Clang          | [![BuildStatus](https://travis-matrix-badges.herokuapp.com/repos/JeffProgrammer/jbl/branches/master/1)](https://travis-ci.org/JeffProgrammer/jbl) |
+| Linux            | GCC            | [![BuildStatus](https://travis-matrix-badges.herokuapp.com/repos/JeffProgrammer/jbl/branches/master/2)](https://travis-ci.org/JeffProgrammer/jbl) |
+| MacOS            | Clang          | [![BuildStatus](https://travis-matrix-badges.herokuapp.com/repos/JeffProgrammer/jbl/branches/master/3)](https://travis-ci.org/JeffProgrammer/jbl) |
 
 # Motivations
 1) Portability - Sticking to C++98 headers from the STL, while using C++11,C++14,C++17 features allow us to use a front end that accepts new modern C++ language features, while still being able to target the standard library to an older version. This is specifically useful when targeting MacOSX 10.6 or lower, because I can use C++11 language features and use libstdc++ as libc++ requires MacOSX 10.7 or higher.
@@ -27,9 +27,11 @@ MacOS Clang [![BuildStatus](https://travis-matrix-badges.herokuapp.com/repos/Jef
 
 # Compilers tested:
 
-* MSVC Community Edition 2015 (Latest Update)
-* MSVC Community Edition 2017 (Latest Update)
-* Apple XCode 8.3.3 with Clang
+* MSVC Community Edition 2015 (Latest Update) (CI)
+* MSVC Community Edition 2017 (Latest Update) (CI)
+* Apple XCode 8.3.3 with Clang (CI)
+* Clang 3.5 (CI)
+* GCC 4.8.4 (CI)
 
 # License
 This library has been relicensed under the MIT License, from the 3 Clause BSD License. See LICENSE for more information.
