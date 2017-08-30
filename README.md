@@ -2,7 +2,13 @@
 A base library for C++11 and beyond.
 
 # Build Status
-[![Build status](https://ci.appveyor.com/api/projects/status/fn7iurg6s0trra3d?svg=true)](https://ci.appveyor.com/project/JeffProgrammer/jbl)
+Windows [![Build status](https://ci.appveyor.com/api/projects/status/fn7iurg6s0trra3d?svg=true)](https://ci.appveyor.com/project/JeffProgrammer/jbl)
+
+Linux Clang [![BuildStatus](https://travis-matrix-badges.herokuapp.com/repos/JeffProgrammer/jbl/branches/master/1)](https://travis-ci.org/JeffProgrammer/jbl)
+
+Linux GCC [![BuildStatus](https://travis-matrix-badges.herokuapp.com/repos/JeffProgrammer/jbl/branches/master/2)](https://travis-ci.org/JeffProgrammer/jbl)
+
+MacOS Clang [![BuildStatus](https://travis-matrix-badges.herokuapp.com/repos/JeffProgrammer/jbl/branches/master/3)](https://travis-ci.org/JeffProgrammer/jbl)
 
 # Motivations
 1) Portability - Sticking to C++98 headers from the STL, while using C++11,C++14,C++17 features allow us to use a front end that accepts new modern C++ language features, while still being able to target the standard library to an older version. This is specifically useful when targeting MacOSX 10.6 or lower, because I can use C++11 language features and use libstdc++ as libc++ requires MacOSX 10.7 or higher.
