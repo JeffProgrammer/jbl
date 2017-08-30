@@ -249,8 +249,8 @@ public:
 	Dictionary(Dictionary &&dict)
 	{
 		mTableSize = dict.mTableSize;
-		mTable = ref.mTable;
-		mPool = move_cast(ref.mPool);
+		mTable = dict.mTable;
+		mPool = move_cast(dict.mPool);
 
 		dict.mTable = nullptr;
 	}
@@ -261,14 +261,18 @@ public:
 		mTable = nullptr;
 	}
 
-	Dictionary& operator=(Dictionary &&ref)
+	Dictionary& operator=(Dictionary &&dict)
 	{
-		if (this != &ref)
+		if (this != &dict)
 		{
-			// Free old contents of the table if the table was heap allocated.
+			// Free old contents of the table
 			free(mTable);
 
-			move(ref);
+			mTableSize = dict.mTableSize;
+			mTable = dict.mTable;
+			mPool = move_cast(dict.mPool);
+
+			dict.mTable = nullptr;
 		}
 		return *this;
 	}
