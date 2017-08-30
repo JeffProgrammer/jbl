@@ -50,7 +50,7 @@ S32 main(S32 argc, const char **argv)
 		kv.erase(position);
 	}
 
-	for (auto &kvPair : kv)
+	for (const auto &kvPair : kv)
 	{
 		printf(" kv: %s, %d\n", kvPair.key.c_str(), kvPair.value);
 	}

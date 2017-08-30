@@ -252,7 +252,7 @@ public:
 		mTable = ref.mTable;
 		mPool = move_cast(ref.mPool);
 
-		ref.mTable = nullptr;
+		dict.mTable = nullptr;
 	}
 
 	~Dictionary()
