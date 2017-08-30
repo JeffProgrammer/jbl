@@ -4,10 +4,20 @@ branches:
 
 clone_folder: c:\jbl
 
+environment:
+  matrix:
+    # Visual Studio 2015
+    - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
+      COMPILER: "Visual Studio 14 2015"
+      TOOLSET: "V140"
+    # Visual Studio 2017
+    - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
+      COMPILER: "Visual Studio 15 2017"
+      TOOLSET: "V141"
+
 before_build:
   - cmd: cd c:\jbl
-  - cmd: echo "Starting build..."
-  - cmd: cmake -G "Visual Studio 14 2015" -T "V140"
+  - cmd: cmake -G %COMPILER% -T %TOOLSET%
   
 build:
   project: Project.sln
