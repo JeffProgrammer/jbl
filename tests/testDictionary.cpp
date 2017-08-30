@@ -43,6 +43,13 @@ S32 main(S32 argc, const char **argv)
 	for (auto it = kv.begin(); it != kv.end(); ++it)
 		printf(" kv: %s, %d\n", (*it).key.c_str(), (*it).value);
 
+	auto position = kv.find("world");
+	if (position != kv.end())
+	{
+		printf("erasing world.\n");
+		kv.erase(position);
+	}
+
 	for (auto &kvPair : kv)
 	{
 		printf(" kv: %s, %d\n", kvPair.key.c_str(), kvPair.value);

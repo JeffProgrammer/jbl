@@ -39,6 +39,7 @@ private:
 		DictionaryValue value;
 
 		Cell *next = nullptr;
+		Cell *previous = nullptr;
 	};
 
 	struct TableCell : Cell
@@ -149,6 +150,7 @@ public:
 	/// It performs forward iteration at O(n) time.
 	/// Unlike Iterator, this version is a constant iterator over the Dictionary.
 	/// @see Iterator
+public:
 	class CIterator
 	{
 	public:
@@ -305,6 +307,7 @@ public:
 				// Create next cell for next insert.
 				Cell *newCell = mPool.alloc(1);
 				newCell->key = key;
+				newCell->previous = cell;
 
 				cell->next = newCell;
 				return newCell->value;
@@ -336,9 +339,73 @@ public:
 			Cell *newCell = mPool.alloc(1);
 			newCell->key = key;
 			newCell->value = value;
+			newCell->previous = cell;
 
 			cell->next = newCell;
 		}
+	}
+
+	Iterator find(const DictionaryKey &key)
+	{
+		size_t hash = hashWithTableSize(key);
+		for (Iterator iter = Iterator(this, hash); iter != end(); ++iter)
+		{
+			if (equals((*iter).key, key))
+				return iter;
+		}
+		return end();
+	}
+
+	CIterator find(const DictionaryKey &key) const
+	{
+		size_t hash = hashWithTableSize(key);
+		for (CIterator iter = CIterator(this, hash); iter != end(); ++iter)
+		{
+			if (equals((*iter).key, key))
+				return iter;
+		}
+		return end();
+	}
+
+	Iterator erase(Iterator iterator)
+	{
+		// Note: Erase doesn't actually 'free' the memory block of
+		// the cell. It just removes the pointer and leaves it dangling.
+		// The memory will be reclaimed once the dictionary is destroyed.
+
+		Cell *currentCell = iterator.mCurrentCell;
+		Cell *nextCell = currentCell->next;
+		Cell *previousCell = currentCell->previous;
+
+		if (previousCell == nullptr)
+		{
+			// This means that currentCell is a table cell.
+
+			if (nextCell == nullptr)
+			{
+				// No next cell, we were the only cell in the table slot.
+				// mark it as empty...
+				static_cast<TableCell*>(currentCell)->hasData = false;
+			}
+			else
+			{
+				// Go ahead and move nextCell into currentCell.
+				currentCell->key = nextCell->key;
+				currentCell->vaue = nextCell->value;
+				currentCell->next = nextCell->next;
+				currentCell->previous = nullptr;
+				static_cast<TableCell*>(currentCell)->hasData = true;
+			}
+		}
+		else
+		{
+			if (nextCell == nullptr)
+				previousCell->next = nullptr;
+			else
+				previousCell->next = nextCell;
+		}
+		
+		// TODO: adjust iterator and return it.
 	}
 
 	/// Grabs an iterator at the beginning of the Dictionary.
