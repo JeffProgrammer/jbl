@@ -372,7 +372,7 @@ public:
 		// Note: Erase doesn't actually 'free' the memory block of
 		// the cell. It just removes the pointer and leaves it dangling.
 		// The memory will be reclaimed once the dictionary is destroyed.
-
+		/*
 		Cell *currentCell = iterator.mCurrentCell;
 		Cell *nextCell = currentCell->next;
 		Cell *previousCell = currentCell->previous;
@@ -406,6 +406,8 @@ public:
 		}
 		
 		// TODO: adjust iterator and return it.
+		*/
+		return Iterator(this, 0);
 	}
 
 	/// Grabs an iterator at the beginning of the Dictionary.
