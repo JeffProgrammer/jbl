@@ -58,7 +58,7 @@
 	#define ALIGN(size) __attribute__((assumed_align(size)))
 
 	// Macro to force inline on a function
-	#define FORCE_INLINE __attribute__((always_inline))
+	#define FORCE_INLINE __attribute__((always_inline)) inline
 
 	// Macro for 32bit vs 64bit
 	#if defined(__x86_64__) || defined(__ppc64__)
