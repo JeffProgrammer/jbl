@@ -8,16 +8,18 @@ environment:
   matrix:
     # Visual Studio 2015
     - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
-      COMPILER: "Visual Studio 14 2015"
-      TOOLSET: "V140"
+      COMPILER: Visual Studio 14 2015
+      TOOLSET: V140
     # Visual Studio 2017
     - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
-      COMPILER: "Visual Studio 15 2017"
-      TOOLSET: "V141"
+      COMPILER: Visual Studio 15 2017
+      TOOLSET: V141
 
 before_build:
   - cmd: cd c:\jbl
-  - cmd: cmake -G %COMPILER% -T %TOOLSET%
+  - cmd: echo %COMPILER%
+  - cmd: echo %TOOLSET%
+  - cmd: cmake -G "%COMPILER%" -T %TOOLSET%
   
 build:
   project: Project.sln
