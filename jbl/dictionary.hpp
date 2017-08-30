@@ -54,6 +54,184 @@ private:
 	}
 
 public:
+	struct KVPair
+	{
+		DictionaryKey key;
+		DictionaryValue value;
+	};
+
+	/// A class that is responsible for iterating over a Dictionary.
+	/// It performs forward iteration at O(n) time.
+	/// @see CIterator
+	class Iterator
+	{
+	public:
+		Iterator(Dictionary *dictionary, S32 tablePosStart)
+		{
+			mDictionary = dictionary;
+			mCurrentCell = nullptr;
+
+			// Find first tablecell within the table that has something
+			// If the table is empty, mTablePos will simply incriment to
+			// the size of the table, thus making it empty and the same as end
+			// condition.
+			mTablePos = tablePosStart;
+			findNextCell();
+		}
+
+		/// Incriments the iterator to advance it to access the next element.
+		/// @return The current iterator.
+		Iterator& operator++()
+		{
+			// If the current cell is nullptr assert.
+			assert(mCurrentCell != nullptr);
+
+			if (mCurrentCell->next != nullptr)
+			{
+				// Just grab the next one on the chain for this bucket.
+				mCurrentCell = mCurrentCell->next;
+			}
+			else
+			{
+				// We need to grab the next cell!
+				mTablePos++;
+				findNextCell();
+			}
+			return *this;
+		}
+		
+		/// Compares if two iterators are at the same position.
+		/// @param it The other iterator to check.
+		/// @return true if both iterators are at the same position, false
+		///  otherwise.
+		bool operator!=(const Iterator &it) const
+		{
+			// Both dictionaries must be the same dictionary
+			// between iterators!
+			assert(mDictionary == it.mDictionary);
+
+			return mTablePos != it.mTablePos;
+		}
+
+		/// Dereferences the current element at the current iterator position.
+		/// @return The key/value pair of the dictionary at the current position.
+		KVPair operator*() const
+		{
+			assert(mCurrentCell != nullptr);
+
+			KVPair pair;
+			pair.key = mCurrentCell->key;
+			pair.value = mCurrentCell->value;
+			return pair;
+		}
+	private:
+		Dictionary *mDictionary;
+		S32 mTablePos;
+		Cell *mCurrentCell;
+
+		/// Advances the iterator to the next cell when it has to jump
+		/// to another bucket.
+		void findNextCell()
+		{
+			for (; mTablePos < mDictionary->mTableSize; ++mTablePos)
+			{
+				TableCell *cell = static_cast<TableCell*>(&mDictionary->mTable[mTablePos]);
+				if (cell->hasData)
+				{
+					mCurrentCell = static_cast<Cell*>(cell);
+					break;
+				}
+			}
+		}
+	};
+
+	/// A class that is responsible for iterating over a Dictionary.
+	/// It performs forward iteration at O(n) time.
+	/// Unlike Iterator, this version is a constant iterator over the Dictionary.
+	/// @see Iterator
+	class CIterator
+	{
+	public:
+		CIterator(Dictionary *dictionary, S32 tablePosStart)
+		{
+			mDictionary = dictionary;
+			mCurrentCell = nullptr;
+
+			// Find first tablecell within the table that has something
+			// If the table is empty, mTablePos will simply incriment to
+			// the size of the table, thus making it empty and the same as end
+			// condition.
+			mTablePos = tablePosStart;
+			findNextCell();
+		}
+
+		/// Incriments the iterator to advance it to access the next element.
+		/// @return The current iterator.
+		const CIterator& operator++()
+		{
+			// If the current cell is nullptr assert.
+			assert(mCurrentCell != nullptr);
+
+			if (mCurrentCell->next != nullptr)
+			{
+				// Just grab the next one on the chain for this bucket.
+				mCurrentCell = mCurrentCell->next;
+			}
+			else
+			{
+				// We need to grab the next cell!
+				mTablePos++;
+				findNextCell();
+			}
+			return *this;
+		}
+
+		/// Compares if two iterators are at the same position.
+		/// @param it The other iterator to check.
+		/// @return true if both iterators are at the same position, false
+		///  otherwise.
+		bool operator!=(const CIterator &it) const
+		{
+			// Both dictionaries must be the same dictionary
+			// between iterators!
+			assert(mDictionary == it.mDictionary);
+
+			return mTablePos != it.mTablePos;
+		}
+
+		/// Dereferences the current element at the current iterator position.
+		/// @return The key/value pair of the dictionary at the current position.
+		const KVPair& operator*() const
+		{
+			assert(mCurrentCell != nullptr);
+
+			KVPair pair;
+			pair.key = mCurrentCell->key;
+			pair.value = mCurrentCell->value;
+			return pair;
+		}
+	private:
+		Dictionary *mDictionary;
+		S32 mTablePos;
+		Cell *mCurrentCell;
+
+		/// Advances the iterator to the next cell when it has to jump
+		/// to another bucket.
+		void findNextCell()
+		{
+			for (; mTablePos < mDictionary->mTableSize; ++mTablePos)
+			{
+				TableCell *cell = static_cast<TableCell*>(&mDictionary->mTable[mTablePos]);
+				if (cell->hasData)
+				{
+					mCurrentCell = static_cast<Cell*>(cell);
+					break;
+				}
+			}
+		}
+	};
+
+public:
 	explicit Dictionary(S32 bucketSize)
 	{
 		static_assert(!std::is_same<DictionaryKey, const char*>::value, "You cannot use const char* as a type for your dictionary key type! Please use String instead.");
@@ -161,6 +339,34 @@ public:
 
 			cell->next = newCell;
 		}
+	}
+
+	/// Grabs an iterator at the beginning of the Dictionary.
+	/// @return an iterator at the beginning of the Dictionary.
+	FORCE_INLINE Iterator begin()
+	{
+		return Iterator(this, 0);
+	}
+
+	/// Grabs an iterator at the end of the Dictionary.
+	/// @return an iterator at the end of the Dictionary.
+	FORCE_INLINE Iterator end()
+	{
+		return Iterator(this, mTableSize);
+	}
+
+	/// Grabs a constant iterator at the beginning of the Dictionary.
+	/// @return a constant iterator at the beginning of the Dictionary.
+	FORCE_INLINE CIterator begin() const
+	{
+		return CIterator(this, 0);
+	}
+
+	/// Grabs a constant iterator at the end of the Dictionary.
+	/// @return a constant iterator at the end of the Dictionary.
+	FORCE_INLINE CIterator end() const
+	{
+		return CIterator(this, mTableSize);
 	}
 
 private:

@@ -39,12 +39,20 @@ S32 main(S32 argc, const char **argv)
 	printf(" kv: %s, %d\n", "world", kv["world"]);
 	printf(" kv: %s, %d\n", "pq", kv["pq"]);
 
+	printf("Now iterating with an iterator!\n");
+	for (auto it = kv.begin(); it != kv.end(); ++it)
+		printf(" kv: %s, %d\n", (*it).key.c_str(), (*it).value);
+
+	for (auto &kvPair : kv)
+	{
+		printf(" kv: %s, %d\n", kvPair.key.c_str(), kvPair.value);
+	}
+
 	Dictionary<S32, S32> kvInts(5);
 	for (S32 i = 0; i < 1000; ++i)
 		kvInts.insert(i, i);
 
 	// Print out the 1-1000
-	// TODO: use iterator
 	printf("kvInts Dictionary Contents:\n");
 	for (S32 i = 0; i < 1000; i++)
 		printf(" kv: %d %d\n", i, kvInts[i]);
