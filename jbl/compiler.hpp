@@ -46,7 +46,7 @@
 	#else
 		#define IS_32_BIT
 	#endif
-#elif defined(__llvm__) || defined(__GNU_C__)
+#elif defined(__llvm__) || defined(__GNUC__)
 	// Only X86 architecture provides support for SSE registers.
 	#if defined(__i386__) || defined(__x86_64__)
 		// We support compiler intrinsics on x86 and x64 architecture.
