@@ -14,12 +14,14 @@ environment:
     - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
       COMPILER: Visual Studio 15 2017
       TOOLSET: V141
+      
+configuration:
+  - Debug
+  - Release
 
 before_build:
   - cmd: cd c:\jbl
-  - cmd: echo %COMPILER%
-  - cmd: echo %TOOLSET%
-  - cmd: cmake -G "%COMPILER%" -T %TOOLSET%
+  - cmd: cmake -G "%COMPILER%" -T "%TOOLSET%"
   
 build:
   project: Project.sln
