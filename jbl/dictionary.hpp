@@ -67,6 +67,7 @@ public:
 	/// @see CIterator
 	class Iterator
 	{
+		friend class Dictionary<DictionaryKey, DictionaryValue, Hash>;
 	public:
 		Iterator(Dictionary *dictionary, S32 tablePosStart)
 		{
@@ -154,6 +155,7 @@ public:
 public:
 	class CIterator
 	{
+		friend class Dictionary<DictionaryKey, DictionaryValue, Hash>;
 	public:
 		CIterator(Dictionary *dictionary, S32 tablePosStart)
 		{
@@ -377,7 +379,7 @@ public:
 		// Note: Erase doesn't actually 'free' the memory block of
 		// the cell. It just removes the pointer and leaves it dangling.
 		// The memory will be reclaimed once the dictionary is destroyed.
-		/*
+
 		Cell *currentCell = iterator.mCurrentCell;
 		Cell *nextCell = currentCell->next;
 		Cell *previousCell = currentCell->previous;
@@ -396,7 +398,7 @@ public:
 			{
 				// Go ahead and move nextCell into currentCell.
 				currentCell->key = nextCell->key;
-				currentCell->vaue = nextCell->value;
+				currentCell->value = nextCell->value;
 				currentCell->next = nextCell->next;
 				currentCell->previous = nullptr;
 				static_cast<TableCell*>(currentCell)->hasData = true;
@@ -410,9 +412,9 @@ public:
 				previousCell->next = nextCell;
 		}
 		
-		// TODO: adjust iterator and return it.
-		*/
-		return Iterator(this, 0);
+		// Iterator has already been accounted for since it internally
+		// uses our current thisptr for looping.
+		return iterator;
 	}
 
 	/// Grabs an iterator at the beginning of the Dictionary.

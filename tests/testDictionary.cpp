@@ -64,6 +64,46 @@ S32 main(S32 argc, const char **argv)
 	for (S32 i = 0; i < 1000; i++)
 		printf(" kv: %d %d\n", i, kvInts[i]);
 
+	// Remove all of them in reverse order!
+	for (S32 i = 999; i > -1; --i)
+		kvInts.erase(kvInts.find(i));
+
+	printf("Does kvInts have anything left in it: ");
+	bool no = true;
+	for (auto vals : kvInts)
+	{
+		no = false;
+		break;
+	}
+	printf("%s. The expected result was no.\n", no ? "no" : "yes.");
+
+	constexpr S32 inc = 6;
+	printf("Now lets add some items and remove a few of them.\n");
+	for (S32 i = 100; i < 200; i += inc)
+	{
+		kvInts.insert(i, i);
+		printf(" Inserting %d %d\n", i, i);
+	}
+	kvInts.erase(kvInts.find(100 + (inc * 7)));
+	kvInts.erase(kvInts.find(100 + (inc * 4)));
+	kvInts.erase(kvInts.find(100 + (inc * 13)));
+	printf("Now lets print out what kvInts has.\n");
+	for (auto vals : kvInts)
+		printf(" kv: %d %d\n", vals.key, vals.value);
+
+	// Now lets delete 118 in the loop.
+	printf("Now lets delete 118 while we are in a loop.\n");
+	auto iter = kvInts.begin();
+	while (iter != kvInts.end())
+	{
+		if ((*iter).key == 118)
+			iter = kvInts.erase(iter);
+		else
+			++iter;
+	}
+	for (auto vals : kvInts)
+		printf(" kv: %d %d\n", vals.key, vals.value);
+
 #ifdef _WIN32
    system("pause");
 #endif
