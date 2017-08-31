@@ -26,6 +26,7 @@
 #define _JBL_DICTIONARY_HPP_
 
 #include <stdlib.h>
+#include "typetraits.hpp"
 #include "memoryChunker.hpp"
 #include "hashFunction.hpp"
 
@@ -236,8 +237,8 @@ public:
 public:
 	explicit Dictionary(S32 bucketSize)
 	{
-		static_assert(!std::is_same<DictionaryKey, const char*>::value, "You cannot use const char* as a type for your dictionary key type! Please use String instead.");
-		static_assert(!std::is_same<DictionaryValue, const char*>::value, "You cannot use const char* as a type for your dictionary value type! Please use String instead.");
+		static_assert(!TypeTraits::IsSame<DictionaryKey, const char*>::value, "You cannot use const char* as a type for your dictionary key type! Please use String instead.");
+		static_assert(!TypeTraits::IsSame<DictionaryValue, const char*>::value, "You cannot use const char* as a type for your dictionary value type! Please use String instead.");
 
 		mTableSize = bucketSize;
 		mTable = static_cast<TableCell*>(calloc(bucketSize, sizeof(TableCell)));

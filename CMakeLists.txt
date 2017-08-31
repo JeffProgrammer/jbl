@@ -36,6 +36,7 @@ set (JBL_SRC
 	jbl/thread.hpp
 	jbl/thread.cpp
 	jbl/types.hpp
+	jbl/typetraits.hpp
 	jbl/vector.hpp
 )
 add_library(JBL ${JBL_SRC})
