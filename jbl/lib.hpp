@@ -25,10 +25,6 @@
 #ifndef _JBL_LIB_HPP_
 #define _JBL_LIB_HPP_
 
-// Exception: These are compile time and do not link with the code. 
-// Thus I will allow it.
-#include <type_traits>
-
 #include <string.h>
 #include "compiler.hpp"
 #include "types.hpp"
