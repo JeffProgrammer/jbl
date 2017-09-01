@@ -62,4 +62,9 @@ FORCE_INLINE bool equals(const char* const &lhs, const char *const &rhs)
 	return strcmp(lhs, rhs) == 0;
 }
 
+FORCE_INLINE S32 mCeil(F32 a)
+{
+	return static_cast<S32>(a + 1.0f);
+}
+
 #endif // _JBL_LIB_H_

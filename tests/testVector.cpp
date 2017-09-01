@@ -44,6 +44,21 @@ S32 main(S32 argc, const char **argv)
    {
       printf("%d\n", i);
    }
+
+	// Lets find the position of 10. and remove it via a loop.
+   auto it = vec.begin();
+   while (it != vec.end())
+   {
+	   if ((*it) == 9)
+		   it = vec.erase(it);
+	   else
+		   ++it;
+   }
+   printf("9 should be removed now from the list.");
+   for (S32 i : vec)
+   {
+	   printf("%d\n", i);
+   }
 	
 	// now move vec
 	Vector<S32> vec2(move_cast(vec));

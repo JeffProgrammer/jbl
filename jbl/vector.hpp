@@ -47,6 +47,7 @@ public:
 	 */
 	class Iterator
 	{
+		friend class Vector<T>;
 	public:
 		/**
 		 * Constructs an iterator.
@@ -116,6 +117,7 @@ public:
 	 */
 	class CIterator
 	{
+		friend class Vector<T>;
 	public:
 		/**
 		 * Constructs a constant iterator.
@@ -286,12 +288,33 @@ public:
 	 */
 	inline bool contains(const T &item) const
 	{
-		for (U32 i = 0; i < mCount; ++i)
+		for (S32 i = 0; i < mCount; ++i)
 		{
 			if (equals(mArray[i], item))
 				return true;
 		}
 		return false;
+	}
+
+	Iterator find(const T &item)
+	{
+		for (S32 i = 0; i < mCount; ++i)
+		{
+			if (equals(mArray[i], item))
+			{
+				return Iterator(mArray, mCount, i);
+			}
+		}
+		return end();
+	}
+
+	Iterator erase(const Iterator &iterator)
+	{
+		// shift everything down by 1 from that position to keep the array compact.
+		S32 i = iterator.mPosition;
+		--mCount;
+		memmove(mArray + i, mArray + i + 1, (mCount - i) * sizeof(T));
+		return Iterator(mArray, mCount, i - 1);
 	}
 	
 	/**
@@ -301,7 +324,7 @@ public:
 	 */
 	inline bool remove(const T &item)
 	{
-		for (U32 i = 0; i < mCount; ++i)
+		for (S32 i = 0; i < mCount; ++i)
 		{
 			if (equals(mArray[i], item))
 			{
@@ -397,7 +420,7 @@ private:
 	 */
 	void expand()
 	{
-		mAllocSize = static_cast<S32>(max(1, mAllocSize) * 1.5f);
+		mAllocSize = mCeil(max(1, mAllocSize) * 1.5f);
 
 		mArray = reinterpret_cast<T*>(realloc(mArray, mAllocSize * sizeof(T)));
 		
