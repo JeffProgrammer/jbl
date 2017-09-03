@@ -36,13 +36,13 @@ FORCE_INLINE T&& move_cast(T &ref)
 }
 
 template<typename T>
-FORCE_INLINE T max(T a, T b)
+FORCE_INLINE T mMax(T a, T b)
 {
 	return (a > b) ? a : b;
 }
 
 template<typename T>
-FORCE_INLINE T min(T a, T b)
+FORCE_INLINE T mMin(T a, T b)
 {
 	return (a < b) ? a : b;
 }
@@ -52,6 +52,12 @@ template<typename T> FORCE_INLINE bool equals(const T &lhs, const T &rhs);
 
 template<typename T>
 FORCE_INLINE bool equals(const T &lhs, const T &rhs)
+{
+	return lhs == rhs;
+}
+
+template<typename T>
+FORCE_INLINE bool equals(const T* &lhs, const T* &rhs)
 {
 	return lhs == rhs;
 }

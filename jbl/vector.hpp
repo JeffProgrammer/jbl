@@ -28,7 +28,7 @@
 #include <stdlib.h>
 #include <assert.h>
 #include <memory.h>
-#include "types.hpp"
+#include "lib.hpp"
 
 /**
  * Implements a contiguous array that will automatically grow in size
@@ -420,7 +420,7 @@ private:
 	 */
 	void expand()
 	{
-		mAllocSize = mCeil(max(1, mAllocSize) * 1.5f);
+		mAllocSize = mCeil(mMax(1, mAllocSize) * 1.5f);
 
 		mArray = reinterpret_cast<T*>(realloc(mArray, mAllocSize * sizeof(T)));
 		
